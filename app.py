@@ -58,6 +58,17 @@ def update():
         myfile.write("%s,%s\n"%(time.time(),obs))
     return "posted"
 
+def replace_first_line():
+    with open("test.txt") as f:
+        lines = f.readlines()
+
+    lines[0] = "This is the line that's replaced.\n"
+
+    lines # ["This is the line that's replaced.\n", 'This is the second line.\n']
+
+    with open("test.txt", "w") as f:
+        f.writelines(lines)
+
 def gen_new_token():
     new_token = uuid.uuid4()
     user_file = open("userdata/%s.txt"%new_token,"a")
@@ -67,6 +78,7 @@ def gen_new_token():
     user_file.write("%s,%s\n"%(time.time(),-1))
     user_file.close()
     return new_token
+
 
 @app.route('/newtoken/', methods=['POST'])
 def newtoken():
@@ -78,8 +90,9 @@ def newtoken():
 # A welcome message to test our server
 @app.route('/')
 def index():
-    return "<h1>Token: %s</h1><br><img src=\"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=%s\"><br>"%(gen_new_token(),gen_new_token())
+    myToken = gen_new_token()
+    return "<h1>Token: %s</h1><br><img src=\"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=%s\"><br>"%(myToken,myToken)
 
 if __name__ == '__main__':
     # Threaded option to enable multiple instances for multiple user access support
-    app.run(threaded=True, host = "0.0.0.0",port=5000)
+    app.run(threaded=True, host = "0.0.0.0",port=80)

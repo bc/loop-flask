@@ -6,7 +6,7 @@ from time import sleep
 import requests
 import pdb
 
-url = "http://127.0.0.1:5000/newtoken/"
+url = "http://169.254.49.227/newtoken/"
 payload = {}
 headers= {}
 token_response = requests.request("POST", url, headers=headers, data = payload)
@@ -16,7 +16,7 @@ token_text = token_response.json()['token']
 
 print(token_text)
 
-url = "http://127.0.0.1:5000/update/?token=%s&obs=OBSERVATION"%token_text
+url = "http://169.254.49.227/update/?token=%s&obs=OBSERVATION"%token_text
 
 payload = {}
 headers = {
@@ -25,5 +25,8 @@ headers = {
 i = 0
 while True:
 	i += 1.03
-	response = requests.request("POST", url.replace("OBSERVATION",str(i),1), headers=headers, data = payload)
+	try:
+		response = requests.request("POST", url.replace("OBSERVATION",str(i),1), headers=headers, data = payload)
+	except Exception as e:
+		print(e)
 	sleep(0.5)
