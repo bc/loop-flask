@@ -6,7 +6,7 @@ from time import sleep
 import requests
 import pdb
 
-ip = "192.168.1.67"
+ip = "34.66.244.118"
 url = "http://%s/newtoken/"%ip
 payload = {}
 headers= {}
@@ -20,12 +20,15 @@ print(token_text)
 url = "http://%s/update/?token=%s&obs=OBSERVATION"%(ip,token_text)
 payload = {}
 headers = {}
-i = 0
+i = 0.0
+N = 900
 while True:
 	try:
-		fraction = (i%100)/100
+		fraction = i/N
 		response = requests.request("POST", url.replace("OBSERVATION",str(fraction),1), headers=headers, data = payload)
 	except Exception as e:
 		print(e)
 	i += 1
 	sleep(0.1)
+	if i == N:
+		i = 0
