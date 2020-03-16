@@ -35,12 +35,12 @@ def get_last_observation(filepath):
 def active_tokens():
     return basenames(get_files("userdata"))
 
-
 def get_telegram_token(loop_token):
     #TODO make non-hardcoded. will only ping brian via bot.
     return("911638276:AAEe7XkH3B_YNg1mpfRZsjt0jm7QX3nZaCg")
 
 def get_telegram_chat_id(loop_token):
+    #TODO make non-hardcoded. will only ping brian via bot.
     return(97634578)
 
 def push_notification(loop_token, message):
@@ -120,7 +120,6 @@ def gen_new_token():
     user_file.write("%s,%s\n"%(time.time(),-1))
     user_file.close()
     return new_token
-
 
 @app.route('/newtoken/', methods=['POST'])
 def newtoken():

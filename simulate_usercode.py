@@ -6,7 +6,7 @@ from time import sleep
 import requests
 import pdb
 
-ip = "34.66.244.118"
+ip = "loopservice.briancohn.com"
 url = "http://%s/newtoken/"%ip
 payload = {}
 headers= {}
