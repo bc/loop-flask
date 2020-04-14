@@ -83,6 +83,33 @@ def listen():
         "value": float(obs)
     })
 
+# from tinydb import TinyDB, Query
+# @app.route('/record_delta/', methods=['POST','GET'])
+# def record_delta():
+
+#     # Get the input token
+#     try:
+#         token = request.args.get("token")
+#         if token not in active_tokens():
+#             abort(Response(
+#                 "Error: The token you tried (%s) is not active. Go make a new one." % token, status=401))
+#     except Exception as e:
+#         abort(Response("Error: The token wasn't present in your request.", status=401))
+
+#     # Make sure input is a parseable float number
+#     try:
+#         delta_seconds = float(request.args.get("delta_seconds"))
+#         process_id = str(request.args.get("process_id"))
+#     except ValueError:
+#         abort(Response("Error: The input you tried is not parseable as a float or a str :(. Make sure the delta is recorded in seconds, and that the parameter is 'obs'", status=401))
+
+
+#     if obs in [0.0, 1.0] and token == "f8992e21-a350-40a5-986f-5221412bdad8":
+#         print("Sending push notification to bc's phone")
+#         push_telegram_notification(token, "@ %s percent" % str(obs*100))
+#         return "posted & notified"
+#     else:
+#         return "posted"
 
 @app.route('/update/', methods=['POST'])
 def update():
