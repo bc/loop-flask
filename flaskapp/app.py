@@ -1,6 +1,5 @@
 import os
-import pdb
-from flask import Flask, request, jsonify, abort, Response
+from flask import Flask, request, jsonify, abort, Response, render_template
 import time
 import uuid
 import json
@@ -190,11 +189,16 @@ def newtoken():
         "METHOD": "POST"
     })
 
-@app.route('/')
-def index():
+@app.route('/start')
+def start():
     myToken = gen_new_token()
     return "<h1>Token: %s</h1><br><img src=\"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=%s\"><br>" % (
         myToken, myToken)
+
+
+@app.route('/')
+def website_root():
+    return render_template("index.html")
 
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
