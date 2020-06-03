@@ -1,0 +1,39 @@
+name: Deploy
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Copy file via scp
+      uses: appleboy/scp-action@master
+      env:
+        HOST: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        PORT: ${{ secrets.PORT }}
+        KEY: ${{ secrets.SSHKEY }}
+      with:
+        source: "."
+        target: "/home/brian.cohn/deploy/ux"
+
+    - name: Executing remote  command
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        PORT: ${{ secrets.PORT }}
+        KEY: ${{ secrets.SSHKEY }}
+        script: cd /home/brian.cohn/deploy/ux/backend/ && chmod +x run.sh && echo $(tmux list-sessions) && echo $(tmux kill-session -t service) && tmux new-session -d -s "service" ./run.sh
+#     - name: Run wav upload test
+#       run: curl --location --request POST 'http://${{ secrets.HOST }}/upload' --form 'file=@backend/templates/test.wav'
+    - name: Slack Webhook
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      run: |
+        curl -X POST --data-urlencode "payload={\"channel\": \"#devstream\", \"username\": \"GitHub Deploy Action\", \"text\": \"Deployed\", \"icon_emoji\": \":gear:\"}" $SLACK_WEBHOOK
+      
