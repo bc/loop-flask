@@ -1,5 +1,5 @@
 #!/bin/sh
-sudo cp src/app.service /etc/systemd/system/app.service
+sudo cp app.service /etc/systemd/system/app.service
 pip3 install -r requirements.txt
 sudo systemctl status app
 sudo systemctl stop app

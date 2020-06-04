@@ -1,6 +1,5 @@
 import requests
 
-
 def get_telegram_token(loop_token: str):
     # TODO make non-hardcoded. will only ping brian via bot.
     return "911638276:AAEe7XkH3B_YNg1mpfRZsjt0jm7QX3nZaCg"

@@ -3,9 +3,7 @@ import time
 import uuid
 
 from flask import Flask, abort, Response
-
-from src.app import path_to_datafolder
-from src.datafunctions import get_files, base_names, compose_CPU, compose_OBS
+from loop_helpers.datafunctions import get_files, base_names, compose_CPU, compose_OBS
 
 
 def active_tokens(path_to_datafolder: str):
@@ -20,7 +18,7 @@ def is_valid_uuid(uuid_to_test: str) -> bool:
     return str(uuid_obj) == uuid_to_test
 
 
-def validate_token(request: Flask.request_class):
+def validate_token(request: Flask.request_class, path_to_datafolder:str):
     token = str(request.args.get("token"))
     if is_valid_uuid(token) and token in active_tokens(path_to_datafolder):
         return token
@@ -29,7 +27,7 @@ def validate_token(request: Flask.request_class):
             "Error: The token `%s` is not active. Go make a new token." % token, status=401))
 
 
-def gen_new_token():
+def gen_new_token(path_to_data_folder: str):
     new_token = uuid.uuid4()
     targetAbspath = os.path.join(path_to_datafolder, "%s.txt" % new_token)
     user_file = open(targetAbspath, "a")

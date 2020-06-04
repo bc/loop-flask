@@ -3,9 +3,10 @@ from flask import Flask, request, jsonify, abort, Response, render_template
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 
-from src.authentication import validate_token, gen_new_token
-from src.datafunctions import get_last_observation_line, compose_CPU, compose_OBS, is_normalized, try_parse_object_as
-from src.notifications import push_telegram_notification
+from loop_helpers.authentication import validate_token, gen_new_token
+from loop_helpers.datafunctions import get_last_observation_line, try_parse_object_as, compose_CPU, is_normalized, \
+    compose_OBS
+from loop_helpers.notifications import push_telegram_notification
 
 app = Flask(__name__)
 path_to_datafolder = "../data"
@@ -87,7 +88,6 @@ def update():
             return "posted; notified"
         else:
             return "posted; notification failed"
-
     else:
         return "posted"
 
@@ -114,14 +114,14 @@ def process_update():
 @app.route('/newtoken/', methods=['POST'])
 def newtoken():
     return jsonify({
-        "token": f"%s" % gen_new_token(),
+        "token": f"%s" % gen_new_token(path_to_datafolder),
         "METHOD": "POST"
     })
 
 
 @app.route('/start')
 def start():
-    myToken = gen_new_token()
+    myToken = gen_new_token(path_to_datafolder)
     return "<h1>Token: %s</h1><br><img src=\"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=%s\"><br>" % (
         myToken, myToken)
 
