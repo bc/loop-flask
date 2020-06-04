@@ -7,7 +7,7 @@ from os import listdir
 from os.path import isfile, join
 
 app = Flask(__name__)
-path_to_datafolder = "/Users/Olive/Documents/GitHub/bc/loop-backend/data"
+path_to_datafolder = "../data"
 
 @app.route('/')
 def website_root():
