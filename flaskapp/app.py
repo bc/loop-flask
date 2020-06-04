@@ -9,6 +9,7 @@ from os.path import isfile, join
 app = Flask(__name__)
 path_to_datafolder = "/Users/Olive/Documents/GitHub/bc/loop-backend/data"
 
+
 # helper functions
 #################
 # gets list of strings, one for each filename in a target directory
@@ -17,17 +18,16 @@ def get_files(mypath):
     return onlyfiles
 
 
-# trims filename extensions from a list of filenames, including the dot
-
-
+# Trims filename extensions from a list of filenames, including the dot
+# Useful for getting the list of guid values from a folder
 def basenames(file_list):
     return [os.path.splitext(f)[0] for f in file_list]
 
 
-def get_last_observation(filepath):
+def get_last_observation_line(filepath, valType="OBS"):
     with open(filepath, "rb") as f:
         observations = [x.decode("utf-8") for x in f.readlines()]
-        v = [x for x in observations if x.startswith("OBS")][-1].rstrip().split(",")
+        v = [x for x in observations if x.startswith(valType)][-1].rstrip().split(",")
         return v
 
 # returns the list of tokens in the userdata folder
@@ -75,20 +75,26 @@ def is_normalized(float_number):
 
 @app.route('/listen/', methods=['GET'])
 def listen():
-    token = request.args.get("token")
-    if token not in active_tokens(path_to_datafolder):
-        abort(Response(
-            "Error: The token you tried (%s) is inactive or nonexistent. Make a new one." % token, status=401))
+    token = validate_token(request)
     targetFilepath = os.path.join(path_to_datafolder, "%s.txt" % token)
-    valtype, time, obs = get_last_observation(targetFilepath)
-    return jsonify({
+
+    valtype, time, obs = get_last_observation_line(targetFilepath, "OBS")
+    valtype, CPUtime, CPUname, CPUobs = get_last_observation_line(targetFilepath, "CPU")
+
+    payload = {"OBS": {
         "unixtime": float(time),
         "value": float(obs)
-    })
+    },
+        "CPU": {
+            "unixtime": float(CPUtime),
+            "name": str(CPUname),
+            "percent": float(CPUobs)
+        }
+    }
+    return jsonify(payload)
 
 @app.route('/update/', methods=['POST'])
 def update():
-    # Get the input token
     token = validate_token(request)
     obs: float = try_parse_object_as(request.args.get("obs"), float)
 
@@ -100,7 +106,7 @@ def update():
     # make the observation
     targetFilepath = os.path.join(path_to_datafolder, "%s.txt" % token)
     with open(targetFilepath, "a") as myfile:
-        myfile.write("%s,%s\n" % (time.time(), obs))
+        myfile.write(compose_OBS(obs))
     # notify if it's a boundary observation (just started or just finished)
     if obs in [0.0, 1.0] and token == "ffdc1f83-66b0-4386-a1d3-d8b924274b28":
         print("Sending push notification to bc's phone")
@@ -112,6 +118,10 @@ def update():
 
     else:
         return "posted"
+
+
+def compose_OBS(obs):
+    return "OBS,%s,%s\n" % (time.time(), obs)
 
 
 @app.route('/process_update/', methods=['POST'])
@@ -140,17 +150,21 @@ def try_parse_object_as(inputObject, parseFunction):
             status=401))
 
 
+def is_valid_uuid(uuid_to_test: str) -> bool:
+    try:
+        uuid_obj = uuid.UUID(uuid_to_test, version=4)
+    except ValueError:
+        return False
+    return str(uuid_obj) == uuid_to_test
+
 
 def validate_token(request: Flask.request_class):
-    try:
-        token = request.args.get("token")
-        if token not in active_tokens(path_to_datafolder):
-            abort(Response(
-                "Error: The token `%s` is not active. Go make a new token." % token, status=401))
-        else:
-            return token
-    except Exception as e:
-        abort(Response("Error: The token wasn't present in your request.", status=401))
+    token = str(request.args.get("token"))
+    if is_valid_uuid(token) and token in active_tokens(path_to_datafolder):
+        return token
+    else:
+        abort(Response(
+            "Error: The token `%s` is not active. Go make a new token." % token, status=401))
 
 
 
@@ -161,10 +175,14 @@ def gen_new_token():
     now = time.time()
     L = ["APN:unknown\n", "init:%s\n" % now]
     user_file.writelines(L)
-    user_file.write("OBS,%s,%s\n" % (time.time(), -1))
-    user_file.write("CPU,%s,INIT,%s\n" % (time.time(), -1))
+    user_file.write(compose_OBS(-1))
+    user_file.write(compose_CPU("INIT", -1))
     user_file.close()
     return new_token
+
+
+def compose_CPU(name, value):
+    return "CPU,%s,%s,%s\n" % (time.time(), name, value)
 
 
 @app.route('/newtoken/', methods=['POST'])
@@ -173,6 +191,7 @@ def newtoken():
         "token": f"%s" % gen_new_token(),
         "METHOD": "POST"
     })
+
 
 @app.route('/start')
 def start():
