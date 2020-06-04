@@ -6,8 +6,8 @@ from flask import Flask, abort, Response
 from loop_helpers.datafunctions import get_files, base_names, compose_CPU, compose_OBS
 
 
-def active_tokens(path_to_datafolder: str):
-    return base_names(get_files(path_to_datafolder))
+def active_tokens(datapath: str):
+    return base_names(get_files(datapath))
 
 
 def is_valid_uuid(uuid_to_test: str) -> bool:
@@ -18,18 +18,18 @@ def is_valid_uuid(uuid_to_test: str) -> bool:
     return str(uuid_obj) == uuid_to_test
 
 
-def validate_token(request: Flask.request_class, path_to_datafolder:str):
+def validate_token(request: Flask.request_class, datapath: str):
     token = str(request.args.get("token"))
-    if is_valid_uuid(token) and token in active_tokens(path_to_datafolder):
+    if is_valid_uuid(token) and token in active_tokens(datapath):
         return token
     else:
         abort(Response(
             "Error: The token `%s` is not active. Go make a new token." % token, status=401))
 
 
-def gen_new_token(path_to_data_folder: str):
+def gen_new_token(datapath: str):
     new_token = uuid.uuid4()
-    targetAbspath = os.path.join(path_to_datafolder, "%s.txt" % new_token)
+    targetAbspath = os.path.join(datapath, "%s.txt" % new_token)
     user_file = open(targetAbspath, "a")
     now = time.time()
     L = ["APN:unknown\n", "init:%s\n" % now]

@@ -1,6 +1,8 @@
-import os, logging
-from flask import Flask, request, jsonify, abort, Response, render_template
+import logging
+import os
+
 import sentry_sdk
+from flask import Flask, request, jsonify, abort, Response, render_template
 from sentry_sdk.integrations.flask import FlaskIntegration
 
 from loop_helpers.authentication import validate_token, gen_new_token
@@ -9,7 +11,7 @@ from loop_helpers.datafunctions import get_last_observation_line, try_parse_obje
 from loop_helpers.notifications import push_telegram_notification
 
 app = Flask(__name__)
-path_to_datafolder = "../data"
+DATAFOLDERPATH = "../data"
 
 app.logger.debug('this is a DEBUG message')
 app.logger.info('this is an INFO message')
@@ -30,20 +32,20 @@ def website_root():
 
 @app.route('/listen/', methods=['GET'])
 def listen():
-    token = validate_token(request)
-    targetFilepath = os.path.join(path_to_datafolder, "%s.txt" % token)
+    token = validate_token(request, DATAFOLDERPATH)
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
 
-    valtype, time, obs = get_last_observation_line(targetFilepath, "OBS")
-    valtype, CPUtime, CPUname, CPUobs = get_last_observation_line(targetFilepath, "CPU")
+    obs_type, time, obs = get_last_observation_line(target_filepath, "OBS")
+    cpu_type, cpu_time, cpu_name, cpu_obs = get_last_observation_line(target_filepath, "CPU")
 
     payload = {"OBS": {
         "unixtime": float(time),
         "value": float(obs)
     },
         "CPU": {
-            "unixtime": float(CPUtime),
-            "name": str(CPUname),
-            "percent": float(CPUobs)
+            "unixtime": float(cpu_time),
+            "name": str(cpu_name),
+            "percent": float(cpu_obs)
         }
     }
     return jsonify(payload)
@@ -51,11 +53,11 @@ def listen():
 
 @app.route('/process_over_request_ping/', methods=['GET'])
 def process_over_request_ping():
-    token = validate_token(request)
+    token = validate_token(request, DATAFOLDERPATH)
     process_name: str = try_parse_object_as(request.args.get("process_name"), str)
     # log this completion to the user's data
-    targetFilepath = os.path.join(path_to_datafolder, "%s.txt" % token)
-    with open(targetFilepath, "a") as myfile:
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
+    with open(target_filepath, "a") as myfile:
         # TODO should do some cleanup of the existing logs as we
         # know the user's completed tracking that process
         myfile.write(compose_CPU(process_name, -1))
@@ -68,7 +70,7 @@ def process_over_request_ping():
 
 @app.route('/update/', methods=['GET'])
 def update():
-    token = validate_token(request)
+    token = validate_token(request, DATAFOLDERPATH)
     obs: float = try_parse_object_as(request.args.get("obs"), float)
 
     # Make sure the float input is between 0 and 1
@@ -77,8 +79,8 @@ def update():
             "Error: you can only push float numbers between 0 and 1 (e.g. 0.25 or 0.70). You entered (%s)." % obs,
             status=401))
     # make the observation
-    targetFilepath = os.path.join(path_to_datafolder, "%s.txt" % token)
-    with open(targetFilepath, "a") as myfile:
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
+    with open(target_filepath, "a") as myfile:
         myfile.write(compose_OBS(obs))
     # notify if it's a boundary observation (just started or just finished)
     if obs in [0.0, 1.0] and token == "ffdc1f83-66b0-4386-a1d3-d8b924274b28":
@@ -95,17 +97,17 @@ def update():
 @app.route('/process_update/', methods=['POST'])
 def process_update():
     # Get the input token
-    token = validate_token(request)
+    token = validate_token(request, DATAFOLDERPATH)
     # TODO create assertions for what the json looks like
     top_process = request.json
     if top_process == "process_not_found":
         app.logger.info("it's done! ping person")
-        return ("completion acknowledged")
+        return "completion acknowledged"
     cpu_val: float = try_parse_object_as(top_process['cpu'], float)  # 0 to e.g. 1600%
     process_name: str = try_parse_object_as(top_process['name'], str)
     # Make the observation
-    targetFilepath = os.path.join(path_to_datafolder, "%s.txt" % token)
-    with open(targetFilepath, "a") as myfile:
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
+    with open(target_filepath, "a") as myfile:
         myfile.write(compose_CPU(process_name, cpu_val))
     # Notify if it's a boundary observation (just started or just finished)
     return "posted"
@@ -114,21 +116,22 @@ def process_update():
 @app.route('/newtoken/', methods=['POST'])
 def newtoken():
     return jsonify({
-        "token": f"%s" % gen_new_token(path_to_datafolder),
+        "token": f"%s" % gen_new_token(DATAFOLDERPATH),
         "METHOD": "POST"
     })
 
 
 @app.route('/start')
 def start():
-    myToken = gen_new_token(path_to_datafolder)
+    my_token = gen_new_token(DATAFOLDERPATH)
     return "<h1>Token: %s</h1><br><img src=\"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=%s\"><br>" % (
-        myToken, myToken)
+        my_token, my_token)
 
 
 @app.route('/debug-sentry')
 def trigger_error():
     division_by_zero = 1 / 0
+    return(division_by_zero)
 
 
 # when you run the app directly via python3 app.py or flask run
