@@ -20,7 +20,7 @@ def get_files(mypath):
 
 # Trims filename extensions from a list of filenames, including the dot
 # Useful for getting the list of guid values from a folder
-def basenames(file_list):
+def base_names(file_list):
     return [os.path.splitext(f)[0] for f in file_list]
 
 
@@ -34,10 +34,10 @@ def get_last_observation_line(filepath, valType="OBS"):
 
 
 def active_tokens(path_to_datafolder: str):
-    return basenames(get_files(path_to_datafolder))
+    return base_names(get_files(path_to_datafolder))
 
 
-def get_telegram_token(loop_token):
+def get_telegram_token(loop_token: str):
     # TODO make non-hardcoded. will only ping brian via bot.
     return "911638276:AAEe7XkH3B_YNg1mpfRZsjt0jm7QX3nZaCg"
 
@@ -93,7 +93,25 @@ def listen():
     }
     return jsonify(payload)
 
-@app.route('/update/', methods=['POST'])
+
+@app.route('/request_ping/', methods=['GET'])
+def request_ping():
+    token = validate_token(request)
+    process_name: str = try_parse_object_as(request.args.get("process_name"), str)
+    # log this completion to the user's data
+    targetFilepath = os.path.join(path_to_datafolder, "%s.txt" % token)
+    with open(targetFilepath, "a") as myfile:
+        # TODO should do some cleanup of the existing logs as we
+        # know the user's completed tracking that process
+        myfile.write(compose_CPU(process_name, -1))
+    telegram_outcome = push_telegram_notification(token, "Process %s done" % process_name)
+    if telegram_outcome:
+        return "notified_of_process_end"
+    else:
+        return "notification_failed"
+
+
+@app.route('/update/', methods=['GET'])
 def update():
     token = validate_token(request)
     obs: float = try_parse_object_as(request.args.get("obs"), float)
@@ -128,14 +146,18 @@ def compose_OBS(obs):
 def process_update():
     # Get the input token
     token = validate_token(request)
-    top_process = request.json[0]
+    # TODO create assertions for what the json looks like
+    top_process = request.json
+    if top_process == "process_not_found":
+        print("it's done! ping person")
+        return ("completion acknowledged")
     cpu_val: float = try_parse_object_as(top_process['cpu'], float)  # 0 to e.g. 1600%
     process_name: str = try_parse_object_as(top_process['name'], str)
 
     # Make the observation
     targetFilepath = os.path.join(path_to_datafolder, "%s.txt" % token)
     with open(targetFilepath, "a") as myfile:
-        myfile.write("CPU,%s,%s,%s\n" % (time.time(), process_name, cpu_val))
+        myfile.write(compose_CPU(process_name, cpu_val))
     # Notify if it's a boundary observation (just started or just finished)
     return "posted"
 
@@ -216,4 +238,4 @@ def trigger_error():
     division_by_zero = 1 / 0
 if __name__ == '__main__':
     # Threaded option to enable multiple instances for multiple user access support
-    app.run(threaded=True, host="0.0.0.0", port=80)
+    app.run(threaded=True, host="0.0.0.0", port=80, ssl_context='adhoc')
