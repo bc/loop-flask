@@ -2,9 +2,6 @@ import psutil
 import time
 import json
 import requests
-import requests
-import sys
-
 
 # Function must be called with root on mac due to an OS limitation
 def processes_by_cpu():
@@ -77,25 +74,24 @@ process_missing_counter = 0
 
 
 def request_process_over_ping(target_process_name, hostport, token):
-    url = "%s/request_ping/?token=%s&process_name=%s" % (hostport, token, target_process_name)
+    url = "%s/process_over_request_ping/?token=%s&process_name=%s" % (hostport, token, target_process_name)
     response = requests.request("GET", url, headers={}, data={})
     return response.text.encode('utf8')
 
 
-cpu_sampling_frequency_hz = 2.0
+inter_sample_delay = 0  # seconds
 # number of seconds a process has to be consecutively dead for us to end.
-process_cooldown_seconds = 60
-cooldown_sample_threshold = process_cooldown_seconds * cpu_sampling_frequency_hz
+process_cooldown_seconds = 3
+
 loop_token = "3311f6d4-b4ba-498a-a3ad-b6989fcbb873"
 host_and_port = "http://127.0.0.1:5000"
 while True:
     outcome = post_process_progress(target_process_name, host_and_port, loop_token)
-    if outcome == "process_not_found":
-        process_missing_counter += 1
-    else:
-        # reset if process is still viable
-        process_missing_counter = 0;
-    if process_missing_counter > cooldown_sample_threshold:
+    if outcome != "process_not_found":
+        # reset if process is found
+        last_time_seen = time.time()
+    time_since_last_seen = time.time() - last_time_seen
+    if time_since_last_seen > process_cooldown_seconds:
         try:
             ping_res = request_process_over_ping(target_process_name, host_and_port, loop_token)
             print(ping_res)
@@ -103,6 +99,5 @@ while True:
         except Exception as e:
             print("Completed process, but ping didn't work. Error: %s" % e)
             break
-    # convert hz to seconds
-    time.sleep(1.0 / cpu_sampling_frequency_hz)
+    time.sleep(inter_sample_delay)
 print("Ended Tracking")

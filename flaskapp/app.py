@@ -94,8 +94,8 @@ def listen():
     return jsonify(payload)
 
 
-@app.route('/request_ping/', methods=['GET'])
-def request_ping():
+@app.route('/process_over_request_ping/', methods=['GET'])
+def process_over_request_ping():
     token = validate_token(request)
     process_name: str = try_parse_object_as(request.args.get("process_name"), str)
     # log this completion to the user's data
