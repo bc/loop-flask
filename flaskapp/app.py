@@ -2,7 +2,6 @@ import os
 from flask import Flask, request, jsonify, abort, Response, render_template
 import time
 import uuid
-import json
 import requests
 from os import listdir
 from os.path import isfile, join
@@ -11,7 +10,7 @@ app = Flask(__name__)
 path_to_datafolder = "/Users/Olive/Documents/GitHub/bc/loop-backend/data"
 
 # helper functions
-################
+#################
 # gets list of strings, one for each filename in a target directory
 def get_files(mypath):
     onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
@@ -27,14 +26,9 @@ def basenames(file_list):
 
 def get_last_observation(filepath):
     with open(filepath, "rb") as f:
-        first = f.readline()  # Read the first line.
-        f.seek(-2, os.SEEK_END)  # Jump to the second last byte.
-        while f.read(1) != b"\n":  # Until EOL is found...
-            # ...jump back the read byte plus one more.
-            f.seek(-2, os.SEEK_CUR)
-        last = f.readline()  # Read last line.
-    return last.decode("utf-8").rstrip().split(",")
-
+        observations = [x.decode("utf-8") for x in f.readlines()]
+        v = [x for x in observations if x.startswith("OBS")][-1].rstrip().split(",")
+        return v
 
 # returns the list of tokens in the userdata folder
 
@@ -86,45 +80,17 @@ def listen():
         abort(Response(
             "Error: The token you tried (%s) is inactive or nonexistent. Make a new one." % token, status=401))
     targetFilepath = os.path.join(path_to_datafolder, "%s.txt" % token)
-    time, obs = get_last_observation(targetFilepath)
+    valtype, time, obs = get_last_observation(targetFilepath)
     return jsonify({
         "unixtime": float(time),
         "value": float(obs)
     })
 
-# from tinydb import TinyDB, Query
-# @app.route('/record_delta/', methods=['POST','GET'])
-# def record_delta():
-
-#     # Get the input token
-#     try:
-#         token = request.args.get("token")
-#         if token not in active_tokens():
-#             abort(Response(
-#                 "Error: The token you tried (%s) is not active. Go make a new one." % token, status=401))
-#     except Exception as e:
-#         abort(Response("Error: The token wasn't present in your request.", status=401))
-
-#     # Make sure input is a parseable float number
-#     try:
-#         delta_seconds = float(request.args.get("delta_seconds"))
-#         process_id = str(request.args.get("process_id"))
-#     except ValueError:
-#         abort(Response("Error: The input you tried is not parseable as a float or a str :(. Make sure the delta is recorded in seconds, and that the parameter is 'obs'", status=401))
-
-
-#     if obs in [0.0, 1.0] and token == "f8992e21-a350-40a5-986f-5221412bdad8":
-#         print("Sending push notification to bc's phone")
-#         push_telegram_notification(token, "@ %s percent" % str(obs*100))
-#         return "posted & notified"
-#     else:
-#         return "posted"
-
 @app.route('/update/', methods=['POST'])
 def update():
     # Get the input token
     token = validate_token(request)
-    obs: float = try_parse_arg_as("obs", float)
+    obs: float = try_parse_object_as(request.args.get("obs"), float)
 
     # Make sure the float input is between 0 and 1
     if not is_normalized(obs):
@@ -148,15 +114,31 @@ def update():
         return "posted"
 
 
-def try_parse_arg_as(paramName, parseFunction):
+@app.route('/process_update/', methods=['POST'])
+def process_update():
+    # Get the input token
+    token = validate_token(request)
+    top_process = request.json[0]
+    cpu_val: float = try_parse_object_as(top_process['cpu'], float)  # 0 to e.g. 1600%
+    process_name: str = try_parse_object_as(top_process['name'], str)
+
+    # Make the observation
+    targetFilepath = os.path.join(path_to_datafolder, "%s.txt" % token)
+    with open(targetFilepath, "a") as myfile:
+        myfile.write("CPU,%s,%s,%s\n" % (time.time(), process_name, cpu_val))
+    # Notify if it's a boundary observation (just started or just finished)
+    return "posted"
+
+
+def try_parse_object_as(inputObject, parseFunction):
     try:
-        obs = parseFunction(request.args.get(paramName))
+        obs = parseFunction(inputObject)
+        return obs
     except ValueError:
         abort(Response(
-            "Error: The value for parameter `%s` you tried `%s` is not parseable as a float." % (
-                paramName, request.args.get("obs")),
+            "Error: Object is not parseable as a %s." % parseFunction.__name__,
             status=401))
-    return obs
+
 
 
 def validate_token(request: Flask.request_class):
@@ -165,9 +147,11 @@ def validate_token(request: Flask.request_class):
         if token not in active_tokens(path_to_datafolder):
             abort(Response(
                 "Error: The token `%s` is not active. Go make a new token." % token, status=401))
+        else:
+            return token
     except Exception as e:
         abort(Response("Error: The token wasn't present in your request.", status=401))
-    return token
+
 
 
 def gen_new_token():
@@ -177,7 +161,8 @@ def gen_new_token():
     now = time.time()
     L = ["APN:unknown\n", "init:%s\n" % now]
     user_file.writelines(L)
-    user_file.write("%s,%s\n" % (time.time(), -1))
+    user_file.write("OBS,%s,%s\n" % (time.time(), -1))
+    user_file.write("CPU,%s,INIT,%s\n" % (time.time(), -1))
     user_file.close()
     return new_token
 
