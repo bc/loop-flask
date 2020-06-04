@@ -9,6 +9,9 @@ from os.path import isfile, join
 app = Flask(__name__)
 path_to_datafolder = "/Users/Olive/Documents/GitHub/bc/loop-backend/data"
 
+@app.route('/')
+def website_root():
+    return render_template("index.html")
 
 # helper functions
 #################
@@ -222,9 +225,6 @@ def start():
         myToken, myToken)
 
 
-@app.route('/')
-def website_root():
-    return render_template("index.html")
 
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -238,4 +238,4 @@ def trigger_error():
     division_by_zero = 1 / 0
 if __name__ == '__main__':
     # Threaded option to enable multiple instances for multiple user access support
-    app.run(threaded=True, host="0.0.0.0", port=80, ssl_context='adhoc')
+    app.run(threaded=True, host="0.0.0.0", port=80, ssl_context='adhoc',debug=False)
