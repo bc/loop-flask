@@ -238,4 +238,4 @@ def trigger_error():
     division_by_zero = 1 / 0
 if __name__ == '__main__':
     # Threaded option to enable multiple instances for multiple user access support
-    app.run(threaded=True, host="0.0.0.0", port=80, ssl_context='adhoc',debug=False)
+    app.run(threaded=True, host="0.0.0.0", port=80, ssl_context='adhoc', debug=False)
