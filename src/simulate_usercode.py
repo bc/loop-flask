@@ -7,7 +7,7 @@ import requests
 import pdb
 
 ip = "loopservice.briancohn.com"
-url = "http://%s/newtoken/"%ip
+url = "http://%s/start/"%ip
 payload = {}
 headers= {}
 token_response = requests.request("POST", url, headers=headers, data = payload)
