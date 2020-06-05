@@ -138,7 +138,7 @@ def trigger_error():
 if __name__ == '__main__':
     # Threaded option to enable multiple instances for multiple user access support
     app.logger.info('Starting Via Flask invocation')
-    app.run(threaded=True, host="0.0.0.0", port=5000, ssl_context='adhoc', debug=False)
+    app.run(threaded=True, host="0.0.0.0", port=5000, ssl_context='adhoc', debug=True)
 
 # this is useful so the logs get passed along to gunicorn when it's running, but don't when you run flask directly.
 if __name__ != '__main__':

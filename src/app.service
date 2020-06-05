@@ -8,14 +8,14 @@ After=network.target
 [Service]
 # Service specify the user and group under which our process will run.
 # TODO find way to make new user with sudo privileges, with only permissions it needs
-User=root
+User=deployuser
 # give group ownership to the www-data group so that Nginx can communicate easily with the Gunicorn processes.
 Group=www-data
 # We'll then map out the working directory and set the PATH environmental variable so that the init system knows where our the executables for the process are located (within our virtual environment).
-WorkingDirectory=/home/brian.cohn/deploy/loop-flask/src
-Environment="PATH=/home/brian.cohn/deploy/loop-flask/src/myprojectvenv/bin"
+WorkingDirectory=/home/deployuser/deploy/loop-flask/src
+Environment="PATH=/home/deployuser/deploy/loop-flask/src/myprojectvenv/bin"
 # We'll then specify the commanded to start the service
-ExecStart=/home/brian.cohn/deploy/loop-flask/src/myenv/bin/gunicorn --workers 3 --bind --log-level=debug --access-logfile "/home/brian.cohn/log.txt" unix:app.sock -m 007 wsgi:app
+ExecStart=/home/deployuser/deploy/loop-flask/src/myenv/bin/gunicorn --workers 4 --bind --log-level=DEBUG --access-logfile "/home/deployuser/gunicorn_vals.log" unix:app.sock -m 007 wsgi:app
 # This will tell systemd what to link this service to if we enable it to start at boot. We want this service to start when the regular multi-user system is up and running:
 [Install]
 WantedBy=multi-user.target

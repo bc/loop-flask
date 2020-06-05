@@ -19,7 +19,7 @@ jobs:
         KEY: ${{ secrets.SSHKEY }}
       with:
         source: "."
-        target: "/home/brian.cohn/deploy/loop-flask"
+        target: "/home/deployuser/deploy/loop-flask"
 
     - name: Executing remote  command
       uses: appleboy/ssh-action@master
@@ -28,7 +28,7 @@ jobs:
         USERNAME: ${{ secrets.USERNAME }}
         PORT: ${{ secrets.PORT }}
         KEY: ${{ secrets.SSHKEY }}
-        script: cd /home/brian.cohn/deploy/loop-flask/ && chmod +x run.sh && echo $(tmux list-sessions) && echo $(tmux kill-session -t service) && tmux new-session -d -s "service" ./run.sh
+        script: cd /home/brian.cohn/deploy/loop-flask/src && chmod +x run.sh && echo $(tmux list-sessions) && echo $(tmux kill-session -t service) && tmux new-session -d -s "service" ./run.sh
 #     - name: Run wav upload test
 #       run: curl --location --request POST 'http://${{ secrets.HOST }}/upload' --form 'file=@backend/templates/test.wav'
     - name: Slack Webhook
