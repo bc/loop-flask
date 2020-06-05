@@ -29,7 +29,13 @@ jobs:
         PORT: ${{ secrets.PORT }}
         debug: true
         KEY: ${{ secrets.SSHKEY }}
-        script: cd /home/brian.cohn/deploy/loop-flask/src && chmod +x run.sh && echo $(tmux list-sessions) && echo $(tmux kill-session -t service) && tmux new-session -d -s "service" ./run.sh
+        script_stop: true
+        script: |
+          cd /home/brian.cohn/deploy/loop-flask/src
+          chmod +x run.sh
+          echo $(tmux list-sessions)
+          echo $(tmux kill-session -t service)
+          tmux new-session -d -s "service" ./run.sh
 #     - name: Run wav upload test
 #       run: curl --location --request POST 'http://${{ secrets.HOST }}/upload' --form 'file=@backend/templates/test.wav'
     - name: Slack Webhook
