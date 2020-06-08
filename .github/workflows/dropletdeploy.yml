@@ -29,7 +29,6 @@ jobs:
         PORT: ${{ secrets.PORT }}
         debug: true
         KEY: ${{ secrets.SSHKEY }}
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         script_stop: true
         script: echo $(ps aux | grep gunicorn | wc -l)
       #     - name: Run wav upload test\`\`\`$(ps aux | grep gunicorn)\`\`\`
