@@ -3,6 +3,7 @@ import time
 import json
 import requests
 
+
 # Function must be called with root on mac due to an OS limitation
 def processes_by_cpu():
     # this one initializes proc. ignore output
@@ -70,6 +71,7 @@ for i in range(20):
 test_text = input("Type the process # to target and press enter:")
 test_number = int(test_text)
 target_process_name = res[test_number]['name']
+print('Tracking process: %s' % target_process_name)
 process_missing_counter = 0
 
 
@@ -84,7 +86,7 @@ inter_sample_delay = 0  # seconds
 process_cooldown_seconds = 3
 
 loop_token = "3311f6d4-b4ba-498a-a3ad-b6989fcbb873"
-host_and_port = "http://127.0.0.1:5000"
+host_and_port = "http://142.93.117.219:5000"
 while True:
     outcome = post_process_progress(target_process_name, host_and_port, loop_token)
     if outcome != "process_not_found":

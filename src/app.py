@@ -29,6 +29,9 @@ sentry_sdk.init(
 def website_root():
     return render_template("index.html")
 
+@app.route('/webclient/')
+def webclient():
+    return render_template("webclient.html")
 
 @app.route('/listen/', methods=['GET'])
 def listen():
