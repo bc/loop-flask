@@ -35,7 +35,7 @@ jobs:
           chmod +x run.sh
           echo $(tmux list-sessions)
           echo $(tmux kill-session -t service)
-          tmux new-session -d -s "service" ./run.sh
+          ps aux | grep gunicorn
 #     - name: Run wav upload test
 #       run: curl --location --request POST 'http://${{ secrets.HOST }}/upload' --form 'file=@backend/templates/test.wav'
     - name: Slack Webhook
