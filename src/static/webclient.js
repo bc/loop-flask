@@ -90,7 +90,7 @@ function update_live_progress(observation) {
 function GET_data(token) {
     var settings = {
         //TODO handle cors correctly
-        "url": `https://cors-anywhere.herokuapp.com/http://142.93.117.219:5000/listen/?token=${token}`,
+        "url": `/listen/?token=${token}`,
         "method": "GET",
         "timeout": 0,
     };
