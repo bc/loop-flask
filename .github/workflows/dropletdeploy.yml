@@ -29,14 +29,11 @@ jobs:
         PORT: ${{ secrets.PORT }}
         debug: true
         KEY: ${{ secrets.SSHKEY }}
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         script_stop: true
-        script: |
-          cd /home/brian.cohn/deploy/loop-flask/src
-          chmod +x run.sh
-          echo $(tmux list-sessions)
-          ps aux | grep gunicorn
-#     - name: Run wav upload test
-#       run: curl --location --request POST 'http://${{ secrets.HOST }}/upload' --form 'file=@backend/templates/test.wav'
+        script: echo $(ps aux | grep gunicorn | wc -l)
+      #     - name: Run wav upload test\`\`\`$(ps aux | grep gunicorn)\`\`\`
+      #       run: curl --location --request POST 'http://${{ secrets.HOST }}/upload' --form 'file=@backend/templates/test.wav'
     - name: Slack Webhook
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
