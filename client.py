@@ -87,19 +87,22 @@ process_cooldown_seconds = 3
 
 loop_token = "3311f6d4-b4ba-498a-a3ad-b6989fcbb873"
 host_and_port = "http://142.93.117.219:5000"
-while True:
-    outcome = post_process_progress(target_process_name, host_and_port, loop_token)
-    if outcome != "process_not_found":
-        # reset if process is found
-        last_time_seen = time.time()
-    time_since_last_seen = time.time() - last_time_seen
-    if time_since_last_seen > process_cooldown_seconds:
-        try:
-            ping_res = request_process_over_ping(target_process_name, host_and_port, loop_token)
-            print(ping_res)
-            break
-        except Exception as e:
-            print("Completed process, but ping didn't work. Error: %s" % e)
-            break
-    time.sleep(inter_sample_delay)
-print("Ended Tracking")
+try:
+    while True:
+        outcome = post_process_progress(target_process_name, host_and_port, loop_token)
+        if outcome != "process_not_found":
+            # reset if process is found
+            last_time_seen = time.time()
+        time_since_last_seen = time.time() - last_time_seen
+        if time_since_last_seen > process_cooldown_seconds:
+            try:
+                ping_res = request_process_over_ping(target_process_name, host_and_port, loop_token)
+                print(ping_res)
+                break
+            except Exception as e:
+                print("Completed process, but ping didn't work. Error: %s" % e)
+                break
+        time.sleep(inter_sample_delay)
+except KeyboardInterrupt:
+    print("Ended Tracking")
+#     todo maybe send the server a friendly note that we disconnected
