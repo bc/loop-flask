@@ -100,7 +100,7 @@ function GET_data(token) {
     });
 }
 
-let datalist = [sample_data(), sample_data(), sample_data(), sample_data(), sample_data()];
+let datalist = [];
 const console_element = document.getElementById("jsonRaw");
 const cpu_title_element = document.getElementById("cpu_title");
 
