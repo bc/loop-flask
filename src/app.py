@@ -274,7 +274,6 @@ def process_update():
         return "posted"
 
 
-
 @app.route('/newtoken/', methods=['POST', 'GET'])
 def newtoken():
     return jsonify({
