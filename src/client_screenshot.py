@@ -1,5 +1,8 @@
 import os
 from time import sleep
+
+import requests
+
 from image_helpers import *
 # open colour image
 from PIL import ImageGrab
@@ -7,17 +10,43 @@ from PIL import ImageGrab
 row_pixel_target = 591
 count = 1
 from scipy.cluster.vq import kmeans
+sleep(3)
+RR = os.popen("screencapture /tmp/test.png")
+sleep(1)
+Image.open("/tmp/test.png").show()
+
+x = int(input("Enter X: "))
+y = int(input("Enter Y: "))
+coord = (x,y)
+sleep(2)
+RR = os.popen("screencapture /tmp/test.png")
+tempVal = img_and_end_px_to_progress(coord,Image.open("/tmp/test.png"), debug=True)
+
+input("It thinks the current percentage is %s Press Enter if the image line looks good, or Control+C to exit"%tempVal)
+
 while True:
     #-R20,20,640,380
     target_filepath = "/Users/briancohn/Desktop/output/s_%s.png"%count
     x = os.popen("screencapture -x %s"%target_filepath)
-    xx = pilToNumpy(Image.open(target_filepath).convert("L")).astype(np.float32)
-    target_row = xx[row_pixel_target]
-    clusters = kmeans(target_row, 2)
-    np.diff(target_row)
+    val = img_and_end_px_to_progress(
+        coord,
+        Image.open(target_filepath),
+        debug=True
+    )
+    print(val)
 
-    sleep(1)
-    count +=1
+    url = "http://0.0.0.0:5000/update_obs/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873&obs=%s" % val
+
+    payload = {}
+    headers = {}
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text.encode('utf8'))
+
+    sleep(2)
+    count += 1
+
 
     #
     # res = os.popen(
