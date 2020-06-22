@@ -1,0 +1,130 @@
+{
+	"info": {
+		"_postman_id": "fda072f9-2cdf-4fd7-8613-97ad0f3e2741",
+		"name": "loop",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "update",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "token",
+						"value": "c84d76b1-44c4-4538-b135-ecb627615990",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "val",
+						"value": "5",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://127.0.0.1:5000/update/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873&obs=0.2999",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"update",
+						""
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "3311f6d4-b4ba-498a-a3ad-b6989fcbb873"
+						},
+						{
+							"key": "obs",
+							"value": "0.2999"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:5000/process_update/?token=ffdc1f83-66b0-4386-a1d3-d8b924274b28",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"pid\": 27677, \"name\": \"AAR\", \"username\": \"Olive\", \"vms\": 6281.1953125, \"cpu\": 90.7}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/process_update/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"process_update",
+						""
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "3311f6d4-b4ba-498a-a3ad-b6989fcbb873"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://127.0.0.1:5000/listen/?token=ffdc1f83-66b0-4386-a1d3-d8b924274b28",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://142.93.117.219:8000/listen/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873",
+					"protocol": "http",
+					"host": [
+						"142",
+						"93",
+						"117",
+						"219"
+					],
+					"port": "8000",
+					"path": [
+						"listen",
+						""
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "3311f6d4-b4ba-498a-a3ad-b6989fcbb873"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
