@@ -5,8 +5,8 @@
 #cd /home/deployuser/loop-flask/src/
 gunicorn wsgi:app \
     --workers 4 \
-    --bind 0.0.0.0:5500 \
+    --bind 0.0.0.0:5000 \
     --reload
-#    --log-file /tmp/gunicorn.log \
-#    --log-level=DEBUG \
+    --log-file /tmp/gunicorn.log \
+    --log-level=DEBUG \
 #    gunicorn --workers 4 --bind --log-level=DEBUG --access-logfile "/home/deployuser/gunicorn_vals.log" unix:app.sock -m 007 wsgi:app
