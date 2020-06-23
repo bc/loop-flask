@@ -56,11 +56,11 @@ function update_live_cpu(proc) {
     cpu_val.innerText = `${proc.value.toFixed(2)}`
     cpu_title_element = document.getElementById("cpu_title");
     cpu_title_element.innerText = `${proc.name}: Current CPU Use`
-    cpu_time.innerText = `Updated ${((Date.now() / 1000) - proc.unixtime).toFixed(2)}s ago`;
+    cpu_time.innerText = `Updated ${((Date.now() / 1000) - proc.unixtime).toFixed(4)}s ago`;
 }
 
 function delta_time_human_readable(unix_seconds) {
-    var elapsed_str = millisecondsToStr(((Date.now() / 1000) - unix_seconds).toFixed(2));
+    var elapsed_str = millisecondsToStr(((Date.now() / 1000) - unix_seconds).toFixed(4));
     return elapsed_str;
 }
 
