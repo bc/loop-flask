@@ -1,29 +1,23 @@
-function sample_data() {
-    return {
-        "CPU": {
-            "name": "Finder",
-            "percent": Math.random() * 100,
-            "unixtime": Date.now() / 1000
-        },
-        "OBS": {
-            "unixtime": Date.now() / 1000,
-            "value": Math.random()
-        }
-    }
+
+
+const obs_val = document.getElementById("obs_val")
+const obs_time = document.getElementById("obs_time")
+
+const cpu_val = document.getElementById("cpu_val")
+const cpu_time = document.getElementById("cpu_time")
+
+function get_token_from_param() {
+    var url = new URL(window.location);
+    var token = url.searchParams.get("token");
+    return token;
 }
 
-function handle(result_json) {
-    datalist.unshift(result_json);
+function b_handle(d) {
+    datalist.unshift(d);
     update_rawconsole();
-    update_live_progress(result_json["OBS"]);
-    update_live_proc(result_json["CPU"]);
+    update_live_progress(d["OBS"]);
+    update_live_cpu(d["CPU"]);
 }
-
-const observationPercentage = document.getElementById("percentage")
-const obsTime = document.getElementById("obsTime")
-
-const procPercentage = document.getElementById("procPercentage")
-const procTime = document.getElementById("procTime")
 
 function millisecondsToStr(milliseconds) {
     // TIP: to find current time in milliseconds, use:
@@ -58,10 +52,11 @@ function millisecondsToStr(milliseconds) {
     return 'less than a second'; //'just now' //or other string you like;
 }
 
-function update_live_proc(proc) {
-    procPercentage.innerText = `${proc.percent}%`
+function update_live_cpu(proc) {
+    cpu_val.innerText = `${proc.value.toFixed(2)}`
+    cpu_title_element = document.getElementById("cpu_title");
     cpu_title_element.innerText = `${proc.name}: Current CPU Use`
-    procTime.innerText = `Updated ${((Date.now() / 1000) - proc.unixtime).toFixed(2)}s ago`;
+    cpu_time.innerText = `Updated ${((Date.now() / 1000) - proc.unixtime).toFixed(2)}s ago`;
 }
 
 function delta_time_human_readable(unix_seconds) {
@@ -82,29 +77,27 @@ function getQueryVariable(variable) {
 }
 
 function update_live_progress(observation) {
-    observationPercentage.innerText = `${observation.value * 100}%`;
+    // console.log(`observation: ${observation.toString()}`);
+    obs_val.innerText = `${observation.value.toFixed(2)}`;
     var elapsed_str = delta_time_human_readable(observation.unixtime);
-    obsTime.innerText = `Updated ${elapsed_str} ago`;
+    obs_time.innerText = `Updated ${elapsed_str} ago`;
 }
 
 function GET_data(token) {
     var settings = {
-        //TODO handle cors correctly
         "url": `/listen/?token=${token}`,
         "method": "GET",
         "timeout": 0,
     };
-
-    $.ajax(settings).done(function (response) {
-        handle(response);
-    });
+    //todo err handling
+    $.ajax(settings, ).done(function (response) {
+        b_handle(response);
+    })
 }
 
 let datalist = [];
-const console_element = document.getElementById("jsonRaw");
-const cpu_title_element = document.getElementById("cpu_title");
-
 function update_rawconsole() {
+    var console_element = document.getElementById("jsonRaw");
     console_element.innerText = JSON.stringify(datalist, undefined, 4);
 }
 

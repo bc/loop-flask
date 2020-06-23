@@ -34,7 +34,7 @@ def website_root():
     return render_template("index.html")
 
 
-@app.route('/webclient/')
+@app.route('/webclient')
 def webclient():
     return render_template("webclient.html")
 
@@ -54,7 +54,7 @@ def listen():
         "CPU": {
             "unixtime": float(cpu_time),
             "name": str(cpu_name),
-            "percent": float(cpu_obs)
+            "value": float(cpu_obs)
         }
     }
     return jsonify(payload)
@@ -80,7 +80,16 @@ def parse_predicate(token, ss):
     if eq_type not in accepted_comparator_operators:
         raise Exception("input comparator operator is not valid. input was: %s, should be one of these:" % (
             eq_type, ",".join(accepted_comparator_operators)))
-    return Predicate(token, eqn_sides[0], eq_type, eqn_sides[1])
+
+    if eqn_sides[0] == "predicate_form_obs":
+        return Predicate(token, "obs", eq_type, eqn_sides[1])
+    elif eqn_sides[0] == "predicate_form_cpu":
+        return Predicate(token, "cpu", eq_type, eqn_sides[1])
+    else:
+        abort(Response(
+            "Error: input was not predicate_form_obs or predicate_form_cpu:" % input_string,
+            status=401))
+
 
 
 def trigger_on_true_evaluation(trigger_on_true, x0, x1):
@@ -142,8 +151,7 @@ def json_to_list_of_predicates(firstline):
 
 @dataclass_json
 @dataclass
-class ContactInfo:
-    type: str
+class CellPhone:
     # phone address is a phone number
     value: str
 
@@ -167,18 +175,18 @@ def set_predicates():
 @app.route('/set_contactinfo/', methods=['POST', 'GET'])
 def set_contactinfo():
     token: str = validate_token(request, DATAFOLDERPATH)
-    contact_info: ContactInfo = try_parse_object_as(request.args.get("contactinfo"), ContactInfo)
+    cell_no: int = try_parse_object_as(request.args.get("cell"), int)
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
     # overwrite prior contact info
     with open(target_filepath, "w") as myfile:
-        newline = contact_info.to_json()  # '[predicatejson]'
+        newline = "cell,+"+str(cell_no) # 3108007011
         myfile.writelines(newline)
     return Response(
-        "PUT new contact info:" + newline,
+        "added new contact info:" + newline,
         status=200)
 
 
-@app.route('/clear_contactinfo/', methods=['GET', 'DELETE'])
+@app.route('/clear_contactinfo/', methods=['POST','GET', 'DELETE'])
 def clear_contactinfo():
     token = validate_token(request, DATAFOLDERPATH)
     clear_contactinfo(token)
@@ -300,7 +308,7 @@ def process_update():
     # Notify if it's a boundary observation (just started or just finished)
     if predicate_is_triggered(token, Observation("cpu", cpu_val)):
         app.logger.info("CPU Predicate triggered")
-        telegram_outcome = push_telegram_notification(token, "CPU@ %s percent" % str(cpu_val * 100))
+        telegram_outcome = push_telegram_notification(token, "CPU@ %s " % str(cpu_val))
         if telegram_outcome:
             return "posted; notified"
         else:
@@ -322,17 +330,6 @@ def newcssheader() -> str:
     <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
 """
-
-
-def pysnippet(host_url, token) -> str:
-    endpoint_cmd = "\"" + str(host_url) + "update_obs/?token=" + str(token) + "&obs=%s\" % val"
-    command = "val = 0.4\nimport requests;print(requests.request(\"POST\", %s, headers={}, data = {}).text.encode('utf8'))" % endpoint_cmd
-    return (command)
-
-
-def curl_snippet(host_url, token):
-    return f"""curl --location --request POST '{host_url}update_obs/?token={token}&obs=0.22'"""
-
 
 def link_to_webclient(host_url, token):
     href_target = str(host_url) + "webclient/?token=%s" % str(token)

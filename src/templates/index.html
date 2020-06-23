@@ -5,12 +5,12 @@
     <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
 </head>
-
+<body>
 <h3>Tokens</h3>
 <a href="/start">START (gen new token)</a><br>
 <a href="/newtoken">START (gen new token via json)</a><br>
 
-<a href="/webclient?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873&process_name=python3">WebClient</a><br>
+<a href="/webclient/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873&process_name=python3">WebClient</a><br>
 <h3>Predicates</h3>
 <pre>obs must be in [0,1], cpu of 0.2 means 20%. multicore percentages are supported too (e.g. cpu<1.56 means 156%)</pre>
 <a href="/get_predicates/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873">See Predicates</a><br>
@@ -19,10 +19,13 @@
 <a href="/set_predicates/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873&predicate=obs>0.5;cpu<0.2">Set an obs>0.9 OR cpu<0.2 predicate</a><br>
 <a href="/set_predicates/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873&predicate=cpu<0.5">Set a cpu<0.5 predicate</a><br>
 
-<h4>debugging</h4>
+<h3>Debugging</h3>
 <a href="/debug-sentry">Debug-sentry</a><br>
 <a href="/process_over_request_ping/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873&process_name=python3">ping
     a 'completed' message</a><br>
 
 <h6>Request</h6>
 <pre>{{request}}</pre>
+
+
+</body>

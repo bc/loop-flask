@@ -2,7 +2,7 @@ import psutil
 import time
 import json
 import requests
-
+import pdb
 
 # Function must be called with root on mac due to an OS limitation
 def processes_by_cpu():
@@ -33,7 +33,7 @@ def extract_process_info(proc):
             return None
         pinfo['vms_bytes'] = proc.memory_info().vms / (1024 * 1024)
         pinfo['rss_bytes'] = proc.memory_info().rss
-        pinfo['cpu'] = proc.cpu_percent(interval=None)
+        pinfo['cpu'] = proc.cpu_percent(interval=None)/100.0 #convert to fraction
         return pinfo
     except:
         return None
@@ -49,7 +49,6 @@ def post_process_progress(target_process_name, host_socket, token):
         #TODO send null result
         return "process_not_found"
     payload: str = json.dumps(only_target_name[0])
-
     url: str = "%s/update_cpu/?token=%s" % (host_socket, token)
     headers = {
         'Content-Type': 'application/json'
@@ -80,7 +79,7 @@ inter_sample_delay = 1 #
 # number of seconds a process has to be consecutively dead for us to end.
 process_cooldown_seconds = 3
 
-loop_token = "3311f6d4-b4ba-498a-a3ad-b6989fcbb873"
+loop_token = "0fbb3598-2fe3-41b9-b8a4-f9383db584bb"
 host_and_port = "http://0.0.0.0:5000"
 try:
     while True:

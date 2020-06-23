@@ -1,3 +1,5 @@
+import json
+
 import requests
 
 
@@ -11,9 +13,10 @@ def get_notification_phonenumber(loop_token:str):
     if os.path.exists(target_filepath):
         raise Exception("No contactinfo found")
     else:
-        pass
-        #todo lookup
-    return("+13108007011")
+        with open(target_filepath, "r") as f:
+            lines = [json.loads(x) for x in f.readlines()]
+            print(lines)
+            return lines[0]["value"]
 
 def get_telegram_chat_id(loop_token):
     # TODO make non-hardcoded. will only ping brian via bot.

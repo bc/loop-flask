@@ -14,12 +14,8 @@ try:
     while True:
         progress += 0.01
         xx = progress % 1
-        url = "http://0.0.0.0:5000/update_obs/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873&obs=%s"%xx
-
-        payload = {}
-        headers= {}
-
-        response = requests.request("POST", url, headers=headers, data = payload)
+        token = "guid_goes_here" #generate one at loop.kaspect.com
+        print(requests.request("POST", "http://0.0.0.0:5000/update_obs/?token=%s&obs=%s"%(token,val), headers={}, data = {}))
 
         print(response.text.encode('utf8'))
         #TODO post the update
