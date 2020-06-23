@@ -79,8 +79,8 @@ inter_sample_delay = 1 #
 # number of seconds a process has to be consecutively dead for us to end.
 process_cooldown_seconds = 3
 
-loop_token = "0fbb3598-2fe3-41b9-b8a4-f9383db584bb"
-host_and_port = "http://0.0.0.0:5000"
+loop_token = "06abc760-135e-437b-a9b2-17f812f239e7"
+host_and_port = "http://142.93.117.219:5000"
 try:
     while True:
         outcome = post_process_progress(target_process_name, host_and_port, loop_token)
