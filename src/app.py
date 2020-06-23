@@ -6,7 +6,7 @@ from enum import Enum
 
 from dataclasses_json import dataclass_json
 import sentry_sdk
-from flask import Flask, request, jsonify, abort, Response, render_template
+from flask import Flask, request, jsonify, abort, Response, render_template, redirect
 from sentry_sdk.integrations.flask import FlaskIntegration
 
 from loop_helpers.authentication import validate_token, gen_new_token
@@ -78,10 +78,12 @@ def parse_predicate(token, ss):
             "Error: input didn't have an element on both sides of the input > or < (%s)." % input_string,
             status=401))
     if eq_type not in accepted_comparator_operators:
-        raise Exception("input comparator operator is not valid. input was: %s, should be one of these:"%(eq_type, ",".join(accepted_comparator_operators)))
+        raise Exception("input comparator operator is not valid. input was: %s, should be one of these:" % (
+            eq_type, ",".join(accepted_comparator_operators)))
     return Predicate(token, eqn_sides[0], eq_type, eqn_sides[1])
 
-def trigger_on_true_evaluation(trigger_on_true, x0,x1):
+
+def trigger_on_true_evaluation(trigger_on_true, x0, x1):
     if trigger_on_true == ">":
         return x0 > x1
     elif trigger_on_true == ">=":
@@ -95,23 +97,24 @@ def trigger_on_true_evaluation(trigger_on_true, x0,x1):
     elif trigger_on_true == "!=":
         return x0 != x1
     else:
-        raise Exception("input trigger was invalid. Input was %s"%trigger_on_true)
+        raise Exception("input trigger was invalid. Input was %s" % trigger_on_true)
 
 
+accepted_comparator_operators = [
+    ">=",
+    "<=",
+    "==",
+    "!=",
+    ">",
+    "<"]
 
-accepted_comparator_operators =[
-">=",
-"<=",
-"==",
-"!=",
-">",
-"<"]
 
 @dataclass_json
 @dataclass
 class Observation:
     feature: str
     value: float
+
 
 @dataclass_json
 @dataclass
@@ -120,14 +123,18 @@ class Predicate:
     feature: str
     trigger_on_true: str
     value: float
+
     def evaluate(self, o: Observation):
         if o.feature != self.feature:
-            raise Exception("wrong observation type %s given to predicate that was expecting a %s" % (o.feature, self.feature))
+            raise Exception(
+                "wrong observation type %s given to predicate that was expecting a %s" % (o.feature, self.feature))
         else:
             return trigger_on_true_evaluation(self.trigger_on_true, o.value, self.value)
 
+
 def list_of_predicate_to_json(L):
     return Predicate.schema().dumps(L, many=True)
+
 
 def json_to_list_of_predicates(firstline):
     return Predicate.schema().loads(firstline, many=True)
@@ -136,24 +143,53 @@ def json_to_list_of_predicates(firstline):
 @dataclass_json
 @dataclass
 class ContactInfo:
-    token: str
     type: str
     # phone address is a phone number
     value: str
 
+
 @app.route('/set_predicates/', methods=['POST', 'GET'])
 def set_predicates():
-    token:str = validate_token(request, DATAFOLDERPATH)
-    preds: [Predicate] = [try_parse_object_as(YY, lambda x: parse_predicate(token, x)) for YY in request.args.get("predicate").split(";")]
+    token: str = validate_token(request, DATAFOLDERPATH)
+    preds: [Predicate] = [try_parse_object_as(YY, lambda x: parse_predicate(token, x)) for YY in
+                          request.args.get("predicate").split(";")]
 
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_predicates.txt" % token)
-    #overwrite prior predicate
+    # overwrite prior predicate
     with open(target_filepath, "w") as myfile:
         predicate_line_out = list_of_predicate_to_json(preds)  # '[predicatejson]'
         myfile.writelines(predicate_line_out)
     return Response(
         "added new predicates:" + predicate_line_out,
         status=200)
+
+
+@app.route('/set_contactinfo/', methods=['POST', 'GET'])
+def set_contactinfo():
+    token: str = validate_token(request, DATAFOLDERPATH)
+    contact_info: ContactInfo = try_parse_object_as(request.args.get("contactinfo"), ContactInfo)
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
+    # overwrite prior contact info
+    with open(target_filepath, "w") as myfile:
+        newline = contact_info.to_json()  # '[predicatejson]'
+        myfile.writelines(newline)
+    return Response(
+        "PUT new contact info:" + newline,
+        status=200)
+
+
+@app.route('/clear_contactinfo/', methods=['GET', 'DELETE'])
+def clear_contactinfo():
+    token = validate_token(request, DATAFOLDERPATH)
+    clear_contactinfo(token)
+    return Response("cleared", status=200)
+
+
+def clear_contactinfo(token):
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
+    if os.path.isfile(target_filepath):
+        os.remove(target_filepath)
+    app.logger.info("rm contactinfo for token %s" % token)
 
 
 @app.route('/get_predicates/', methods=['GET'])
@@ -164,44 +200,43 @@ def get_predicates_endpoint():
         list_of_predicate_to_json(predicates),
         status=200)
 
+
 @app.route('/clear_predicates/', methods=['GET'])
 def clear_predicates_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
     clear_all_predicates(token)
-    return Response("cleared",status=200)
-
-
-
+    return Response("cleared", status=200)
 
 
 def get_predicates(token):
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_predicates.txt" % token)
     if not os.path.isfile(target_filepath):
-        app.logger.info("No predicates found for token: %s. Returning empty list of predicates"%token)
+        app.logger.info("No predicates found for token: %s. Returning empty list of predicates" % token)
         return []
     with open(target_filepath, 'r') as f:
         firstline = f.readline()
         preds = json_to_list_of_predicates(firstline)  # [Person(name='lidatong')]
     return preds
 
+
 def predicate_is_triggered(token, o: Observation):
     predicates = get_predicates(token)
     if len(predicates) == 0:
-        #if there are no predicates, they can't be triggered
+        # if there are no predicates, they can't be triggered
         return False
     predicate_matches = [p.evaluate(o) for p in predicates if p.feature == o.feature]
     print(predicate_matches)
     result = any(predicate_matches)
-    if result==True:
+    if result == True:
         clear_all_predicates(token)
     return result
+
 
 def clear_all_predicates(token):
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_predicates.txt" % token)
     if os.path.isfile(target_filepath):
         os.remove(target_filepath)
-    app.logger.info("predicates for token %s"%token)
-
+    app.logger.info("rm predicates for token %s" % token)
 
 
 @app.route('/process_over_request_ping/', methods=['GET'])
@@ -236,7 +271,7 @@ def update():
     with open(target_filepath, "a") as myfile:
         myfile.write(compose_OBS(obs))
     # notify if it's a boundary observation (just started or just finished)
-    if predicate_is_triggered(token, Observation("obs",obs)):
+    if predicate_is_triggered(token, Observation("obs", obs)):
         app.logger.info("Sending push notification to BC's phone #TODO twilio")
         telegram_outcome = push_telegram_notification(token, "@ %s percent" % str(obs * 100))
         if telegram_outcome:
@@ -263,7 +298,7 @@ def process_update():
     with open(target_filepath, "a") as myfile:
         myfile.write(compose_CPU(process_name, cpu_val))
     # Notify if it's a boundary observation (just started or just finished)
-    if predicate_is_triggered(token, Observation("cpu",cpu_val)):
+    if predicate_is_triggered(token, Observation("cpu", cpu_val)):
         app.logger.info("CPU Predicate triggered")
         telegram_outcome = push_telegram_notification(token, "CPU@ %s percent" % str(cpu_val * 100))
         if telegram_outcome:
@@ -282,11 +317,34 @@ def newtoken():
     })
 
 
+def newcssheader() -> str:
+    return """
+    <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+"""
+
+
+def pysnippet(host_url, token) -> str:
+    endpoint_cmd = "\"" + str(host_url) + "update_obs/?token=" + str(token) + "&obs=%s\" % val"
+    command = "val = 0.4\nimport requests;print(requests.request(\"POST\", %s, headers={}, data = {}).text.encode('utf8'))" % endpoint_cmd
+    return (command)
+
+
+def curl_snippet(host_url, token):
+    return f"""curl --location --request POST '{host_url}update_obs/?token={token}&obs=0.22'"""
+
+
+def link_to_webclient(host_url, token):
+    href_target = str(host_url) + "webclient/?token=%s" % str(token)
+    return href_target
+
+def doublequoteit(s:str) -> str:
+    return "\"%s\""%s
+
 @app.route('/start')
 def start():
     my_token = gen_new_token(DATAFOLDERPATH)
-    return "<h1>Token: %s</h1><br><img src=\"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=%s\"><br>" % (
-        my_token, my_token)
+    return redirect(f"{request.host_url}webclient?token={my_token}", code=302)
 
 
 @app.route('/debug-sentry')

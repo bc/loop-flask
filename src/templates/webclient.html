@@ -10,7 +10,75 @@
 <header>
     <h1>Loop Web Client v0.1.0</h1>
 </header>
+<details open>
+    <summary>Setup</summary>
+    <h1>Token Generated</h1><br>
 
+       <script type="text/javascript">
+           document.write(`
+           <a href="${window.location.href}">
+            <img src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.href}" style=".fade-in {
+animation: fadeIn ease 3s;
+-webkit-animation: fadeIn ease 3s;
+-moz-animation: fadeIn ease 3s;
+-o-animation: fadeIn ease 3s;
+-ms-animation: fadeIn ease 3s;
+}
+@keyframes fadeIn {
+0% {opacity:0;}
+100% {opacity:1;}
+}
+
+@-moz-keyframes fadeIn {
+0% {opacity:0;}
+100% {opacity:1;}
+}
+
+@-webkit-keyframes fadeIn {
+0% {opacity:0;}
+100% {opacity:1;}
+}
+
+@-o-keyframes fadeIn {
+0% {opacity:0;}
+100% {opacity:1;}
+}
+
+@-ms-keyframes fadeIn {
+0% {opacity:0;}
+100% {opacity:1;}
+}">
+           </a>
+`)
+       </script>
+
+    <br>
+    <h2>curl Snippet</h2>
+
+    <!--    CURL COMMAND    -->
+    <script type="text/javascript">
+        var url_string = "http://www.example.com/t.html?a=1&b=3&c=m2-m3-m4-m5"; //window.location.href
+    var url = new URL(window.location);
+    var token = url.searchParams.get("token");
+               document.write(`<pre>curl --location --request POST '${window.location.protocol}//${window.location.host}/update_obs/?token=${token}&obs=0.22'</pre>`)
+    </script>
+
+    <h2>Python Snippet</h2>
+
+        <!--    PY COMMAND    -->
+    <script type="text/javascript">
+        var url_string = "http://www.example.com/t.html?a=1&b=3&c=m2-m3-m4-m5"; //window.location.href
+    var url = new URL(window.location);
+    var token = url.searchParams.get("token");
+               document.write(`<pre>import requests;print(requests.request("POST","${window.location.protocol}//${window.location.host}/update_obs/?token=${token}&obs=%s"%val, headers={}, data = {}).text.encode('utf8'))</pre>`)
+    </script>
+
+
+
+    <a href="https://curl.trillworks.com/">
+        Generate snippets for Ansible URI, MATLAB, Node.js, R, PHP, Strest, Go, Dart, JSON, Elixir, or Rust
+    </a>
+</details>
 <h6 id="cpu_title">CPU Use for </h6>
 
 <h1 id="procPercentage" style="color:#440dc9"></h1>
@@ -21,7 +89,8 @@
 
 <pre id="jsonRaw" style="font-size: 3px; margin-top: 80px"></pre>
 
-
+<h6>Request</h6>
+<pre>{{request}}</pre>
 </body>
 <script type=text/javascript src="{{url_for('static', filename='jquery-3.5.1.min.js')}}" type="module"></script>
 <script type=text/javascript src="{{url_for('static', filename='webclient.js')}}" type="module"></script>
