@@ -93,13 +93,7 @@ def parse_predicate(token, ss):
 
 
 def trigger_on_true_evaluation(trigger_on_true, x0, x1):
-    accepted_comparator_operators = [
-        ">=",
-        "<=",
-        "==",
-        "!=",
-        ">",
-        "<"]
+    accepted_comparator_operators = [">=","<=","==","!=",">","<"]
     if trigger_on_true == ">":
         return x0 > x1
     elif trigger_on_true == ">=":
