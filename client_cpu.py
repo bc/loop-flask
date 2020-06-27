@@ -2,7 +2,14 @@ import psutil
 import time
 import json
 import requests
-import pdb
+
+loop_token = "533fe6db-e3e6-4075-9fac-e32667684b37"
+host_and_port = "http://142.93.117.219:5000"
+inter_sample_delay = 30 #
+
+# ISD * X is the amount of time the process can be dead for before notifying a finished process.
+cooldown_timer = 3 #this is X
+
 
 # Function must be called with root on mac due to an OS limitation
 def processes_by_cpu():
@@ -75,16 +82,18 @@ print('Tracking process: %s' % target_process_name)
 process_missing_counter = 0
 
 
-inter_sample_delay = 1 #
-# number of seconds a process has to be consecutively dead for us to end.
-process_cooldown_seconds = 3
 
-loop_token = "06abc760-135e-437b-a9b2-17f812f239e7"
-host_and_port = "http://142.93.117.219:5000"
+
 try:
     while True:
         outcome = post_process_progress(target_process_name, host_and_port, loop_token)
+        if outcome == "process_not_found":
+            cooldown_timer -= 1
+            if cooldown_timer == 0:
+                print("process definitely died. POSTING completion message")
+                break
+                #TODO post_process_at_neg1(target_process_name,host_and_port,loop_token)
         time.sleep(inter_sample_delay)
 except KeyboardInterrupt:
     print("Ended Tracking")
-#     todo maybe send the server a friendly note that we disconnected
+    # TODO print("sending end tracking POST note to server")

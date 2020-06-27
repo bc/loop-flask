@@ -93,29 +93,30 @@ def parse_predicate(token, ss):
 
 
 def trigger_on_true_evaluation(trigger_on_true, x0, x1):
+    accepted_comparator_operators = [
+        ">=",
+        "<=",
+        "==",
+        "!=",
+        ">",
+        "<"]
     if trigger_on_true == ">":
         return x0 > x1
     elif trigger_on_true == ">=":
-        return x0 > x1
+        return x0 >= x1
     elif trigger_on_true == "<":
         return x0 < x1
     elif trigger_on_true == "<=":
-        return x0 < x1
+        return x0 <= x1
     elif trigger_on_true == "==":
         return x0 == x1
     elif trigger_on_true == "!=":
         return x0 != x1
     else:
-        raise Exception("input trigger was invalid. Input was %s" % trigger_on_true)
+        raise Exception("input trigger was invalid. Input was %s; accepted ones are: %s" % (trigger_on_true,",".join(accepted_comparator_operators))
 
 
-accepted_comparator_operators = [
-    ">=",
-    "<=",
-    "==",
-    "!=",
-    ">",
-    "<"]
+
 
 
 @dataclass_json
@@ -132,7 +133,7 @@ class Predicate:
     feature: str
     trigger_on_true: str
     value: float
-
+    # true if the trigger is true with a given observation, for the matching observation type
     def evaluate(self, o: Observation):
         if o.feature != self.feature:
             raise Exception(
@@ -232,7 +233,8 @@ def predicate_is_triggered(token, o: Observation):
     if len(predicates) == 0:
         # if there are no predicates, they can't be triggered
         return False
-    predicate_matches = [p.evaluate(o) for p in predicates if p.feature == o.feature]
+    relevant_predicates = [p for p in predicates if p.feature == o.feature]
+    predicate_matches = [p.evaluate(o) for p in relevant_predicates]
     print(predicate_matches)
     result = any(predicate_matches)
     if result == True:
