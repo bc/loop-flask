@@ -78,9 +78,9 @@ def parse_predicate(token, ss):
         abort(Response(
             "Error: input didn't have an element on both sides of the input > or < (%s)." % input_string,
             status=401))
-    if eq_type not in accepted_comparator_operators:
+    if eq_type not in accepted_comparator_operators():
         raise Exception("input comparator operator is not valid. input was: %s, should be one of these:" % (
-            eq_type, ",".join(accepted_comparator_operators)))
+            eq_type, ",".join(accepted_comparator_operators())))
 
     if eqn_sides[0] == "predicate_form_obs":
         return Predicate(token, "obs", eq_type, eqn_sides[1])
@@ -93,8 +93,10 @@ def parse_predicate(token, ss):
 
 
 
-def trigger_on_true_evaluation(trigger_on_true, x0, x1):
-    accepted_comparator_operators = [">=","<=","==","!=",">","<"]
+def accepted_comparator_operators():
+    return [">=","<=","==","!=",">","<"]
+
+def trigger_on_true_evaluation(trigger_on_true, x0, x1):s
     if trigger_on_true == ">":
         return x0 > x1
     elif trigger_on_true == ">=":
@@ -108,7 +110,7 @@ def trigger_on_true_evaluation(trigger_on_true, x0, x1):
     elif trigger_on_true == "!=":
         return x0 != x1
     else:
-        raise Exception("input trigger was invalid. Input was %s; accepted ones are: %s" % (trigger_on_true,",".join(accepted_comparator_operators)))
+        raise Exception("input trigger was invalid. Input was %s; accepted ones are: %s" % (trigger_on_true,",".join(accepted_comparator_operators())))
 
 
 @dataclass_json
