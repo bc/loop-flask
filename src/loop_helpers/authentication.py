@@ -9,7 +9,6 @@ from loop_helpers.datafunctions import get_files, base_names, compose_CPU, compo
 def active_tokens(datapath: str):
     return base_names(get_files(datapath))
 
-
 def is_valid_uuid(uuid_to_test: str) -> bool:
     try:
         uuid_obj = uuid.UUID(uuid_to_test, version=4)

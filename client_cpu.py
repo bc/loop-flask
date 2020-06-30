@@ -3,8 +3,8 @@ import time
 import json
 import requests
 
-loop_token = "533fe6db-e3e6-4075-9fac-e32667684b37"
-host_and_port = "http://142.93.117.219:5000"
+loop_token = "634d39e4-313b-4d74-9ccb-03ed1fd72116"
+host_and_port = "http://a151da63a190.ngrok.io"
 inter_sample_delay = 30 #
 
 # ISD * X is the amount of time the process can be dead for before notifying a finished process.

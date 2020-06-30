@@ -1,10 +1,9 @@
-
-
 const obs_val = document.getElementById("obs_val")
 const obs_time = document.getElementById("obs_time")
 
 const cpu_val = document.getElementById("cpu_val")
 const cpu_time = document.getElementById("cpu_time")
+
 
 function get_token_from_param() {
     var url = new URL(window.location);
@@ -19,6 +18,23 @@ function b_handle(d) {
     update_live_cpu(d["CPU"]);
 }
 
+
+const update_observation = function(obs_str){
+        var requestOptions = {
+            method: 'POST',
+            redirect: 'follow'
+        };
+        console.log(obs_str + "is the str")
+var endpt = `\"${window.location.protocol}//${window.location.host}/update_obs/?token=${get_token_from_param()}&obs=${obs_str}`;
+    console.log(endpt);
+        fetch(endpt, requestOptions)
+            .then(response => response.text())
+            .then(result => console.log(result))
+            .catch(error => console.log('error', error));
+    };
+
+const mock_post_update_buttons = document.querySelectorAll("#post_obs_onclick");
+Array.from(mock_post_update_buttons).map(x=> x.onclick = () => update_observation(this.innerText))
 function millisecondsToStr(milliseconds) {
     // TIP: to find current time in milliseconds, use:
     // var  current_time_milliseconds = new Date().getTime();
@@ -90,7 +106,7 @@ function GET_data(token) {
         "timeout": 0,
     };
     //todo err handling
-    $.ajax(settings, ).done(function (response) {
+    $.ajax(settings).done(function (response) {
         b_handle(response);
     })
 }

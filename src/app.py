@@ -73,6 +73,7 @@ def parse_predicate(token, ss):
         abort(Response(
             "Error: input should have a > or a < in the statement yours had neither: (%s)." % input_string,
             status=401))
+
     if len(eqn_sides) != 2:
         abort(Response(
             "Error: input didn't have an element on both sides of the input > or < (%s)." % input_string,
@@ -107,10 +108,7 @@ def trigger_on_true_evaluation(trigger_on_true, x0, x1):
     elif trigger_on_true == "!=":
         return x0 != x1
     else:
-        raise Exception("input trigger was invalid. Input was %s; accepted ones are: %s" % (trigger_on_true,",".join(accepted_comparator_operators))
-
-
-
+        raise Exception("input trigger was invalid. Input was %s; accepted ones are: %s" % (trigger_on_true,",".join(accepted_comparator_operators)))
 
 
 @dataclass_json
