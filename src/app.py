@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import pdb
@@ -11,8 +12,9 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 
 from loop_helpers.authentication import validate_token, gen_new_token
 from loop_helpers.datafunctions import get_last_observation_line, try_parse_object_as, compose_CPU, is_normalized, \
-    compose_OBS
-from loop_helpers.notifications import push_telegram_notification
+    compose_OBS, Observation
+from loop_helpers.notifications import push_telegram_notification, text_update, Predicate, CellPhone, get_contactinfo, \
+    predicate_is_triggered
 
 app = Flask(__name__)
 DATAFOLDERPATH = "../data"
@@ -60,96 +62,6 @@ def listen():
     return jsonify(payload)
 
 
-def parse_predicate(token, ss):
-    input_string = ss.replace("=", "").replace(" ", "")
-
-    if ">" in input_string:
-        eqn_sides = input_string.split(">")
-        eq_type = ">"
-    elif "<" in input_string:
-        eqn_sides = input_string.split("<")
-        eq_type = "<"
-    else:
-        abort(Response(
-            "Error: input should have a > or a < in the statement yours had neither: (%s)." % input_string,
-            status=401))
-
-    if len(eqn_sides) != 2:
-        abort(Response(
-            "Error: input didn't have an element on both sides of the input > or < (%s)." % input_string,
-            status=401))
-    if eq_type not in accepted_comparator_operators():
-        raise Exception("input comparator operator is not valid. input was: %s, should be one of these:" % (
-            eq_type, ",".join(accepted_comparator_operators())))
-
-    if eqn_sides[0] == "predicate_form_obs":
-        return Predicate(token, "obs", eq_type, eqn_sides[1])
-    elif eqn_sides[0] == "predicate_form_cpu":
-        return Predicate(token, "cpu", eq_type, eqn_sides[1])
-    else:
-        abort(Response(
-            "Error: input was not predicate_form_obs or predicate_form_cpu:" % input_string,
-            status=401))
-
-
-
-def accepted_comparator_operators():
-    return [">=","<=","==","!=",">","<"]
-
-def trigger_on_true_evaluation(trigger_on_true, x0, x1):s
-    if trigger_on_true == ">":
-        return x0 > x1
-    elif trigger_on_true == ">=":
-        return x0 >= x1
-    elif trigger_on_true == "<":
-        return x0 < x1
-    elif trigger_on_true == "<=":
-        return x0 <= x1
-    elif trigger_on_true == "==":
-        return x0 == x1
-    elif trigger_on_true == "!=":
-        return x0 != x1
-    else:
-        raise Exception("input trigger was invalid. Input was %s; accepted ones are: %s" % (trigger_on_true,",".join(accepted_comparator_operators())))
-
-
-@dataclass_json
-@dataclass
-class Observation:
-    feature: str
-    value: float
-
-
-@dataclass_json
-@dataclass
-class Predicate:
-    token: str
-    feature: str
-    trigger_on_true: str
-    value: float
-    # true if the trigger is true with a given observation, for the matching observation type
-    def evaluate(self, o: Observation):
-        if o.feature != self.feature:
-            raise Exception(
-                "wrong observation type %s given to predicate that was expecting a %s" % (o.feature, self.feature))
-        else:
-            return trigger_on_true_evaluation(self.trigger_on_true, o.value, self.value)
-
-
-def list_of_predicate_to_json(L):
-    return Predicate.schema().dumps(L, many=True)
-
-
-def json_to_list_of_predicates(firstline):
-    return Predicate.schema().loads(firstline, many=True)
-
-
-@dataclass_json
-@dataclass
-class CellPhone:
-    # phone address is a phone number
-    value: str
-
 
 @app.route('/set_predicates/', methods=['POST', 'GET'])
 def set_predicates():
@@ -170,11 +82,11 @@ def set_predicates():
 @app.route('/set_contactinfo/', methods=['POST', 'GET'])
 def set_contactinfo():
     token: str = validate_token(request, DATAFOLDERPATH)
-    cell_no: int = try_parse_object_as(request.args.get("cell"), int)
+    cell_no: CellPhone = try_parse_object_as(request.args.get("cell"), CellPhone)
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
     # overwrite prior contact info
     with open(target_filepath, "w") as myfile:
-        newline = "cell,+"+str(cell_no) # 3108007011
+        newline = CellPhone.to_json(cell_no)
         myfile.writelines(newline)
     return Response(
         "added new contact info:" + newline,
@@ -188,12 +100,10 @@ def clear_contactinfo():
     return Response("cleared", status=200)
 
 
-def clear_contactinfo(token):
-    target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
-    if os.path.isfile(target_filepath):
-        os.remove(target_filepath)
-    app.logger.info("rm contactinfo for token %s" % token)
-
+@app.route('/get_contactinfo/', methods=['GET'])
+def get_contactinfo_endpoint():
+    token = validate_token(request, DATAFOLDERPATH)
+    return get_contactinfo(token, DATAFOLDERPATH)
 
 @app.route('/get_predicates/', methods=['GET'])
 def get_predicates_endpoint():
@@ -207,40 +117,8 @@ def get_predicates_endpoint():
 @app.route('/clear_predicates/', methods=['GET'])
 def clear_predicates_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
-    clear_all_predicates(token)
+    clear_all_predicates(token, DATAFOLDERPATH)
     return Response("cleared", status=200)
-
-
-def get_predicates(token):
-    target_filepath = os.path.join(DATAFOLDERPATH, "%s_predicates.txt" % token)
-    if not os.path.isfile(target_filepath):
-        app.logger.info("No predicates found for token: %s. Returning empty list of predicates" % token)
-        return []
-    with open(target_filepath, 'r') as f:
-        firstline = f.readline()
-        preds = json_to_list_of_predicates(firstline)  # [Person(name='lidatong')]
-    return preds
-
-
-def predicate_is_triggered(token, o: Observation):
-    predicates = get_predicates(token)
-    if len(predicates) == 0:
-        # if there are no predicates, they can't be triggered
-        return False
-    relevant_predicates = [p for p in predicates if p.feature == o.feature]
-    predicate_matches = [p.evaluate(o) for p in relevant_predicates]
-    print(predicate_matches)
-    result = any(predicate_matches)
-    if result == True:
-        clear_all_predicates(token)
-    return result
-
-
-def clear_all_predicates(token):
-    target_filepath = os.path.join(DATAFOLDERPATH, "%s_predicates.txt" % token)
-    if os.path.isfile(target_filepath):
-        os.remove(target_filepath)
-    app.logger.info("rm predicates for token %s" % token)
 
 
 @app.route('/process_over_request_ping/', methods=['GET'])
@@ -275,11 +153,12 @@ def update():
     with open(target_filepath, "a") as myfile:
         myfile.write(compose_OBS(obs))
     # notify if it's a boundary observation (just started or just finished)
-    if predicate_is_triggered(token, Observation("obs", obs)):
+    if predicate_is_triggered(token, Observation("obs", obs),DATAFOLDERPATH):
         app.logger.info("Sending push notification to BC's phone #TODO twilio")
-        telegram_outcome = push_telegram_notification(token, "@ %s percent" % str(obs * 100))
-        if telegram_outcome:
-            return "posted; notified"
+        twilio_resp = text_update(token, "Ding! Value is now at \n%s"%obs)
+        # telegram_outcome = push_telegram_notification(token, "@ %s percent" % str(obs * 100))
+        if twilio_resp:
+            return "posted; notified @ %s"%json.dumps(twilio_resp)
         else:
             return "posted; notification failed"
     else:
@@ -302,11 +181,11 @@ def process_update():
     with open(target_filepath, "a") as myfile:
         myfile.write(compose_CPU(process_name, cpu_val))
     # Notify if it's a boundary observation (just started or just finished)
-    if predicate_is_triggered(token, Observation("cpu", cpu_val)):
+    if predicate_is_triggered(token, Observation("cpu", cpu_val), DATAFOLDERPATH):
         app.logger.info("CPU Predicate triggered")
         telegram_outcome = push_telegram_notification(token, "CPU@ %s " % str(cpu_val))
         if telegram_outcome:
-            return "posted; notified"
+            return "posted; notified: %s"%json.dumps(telegram_outcome)
         else:
             return "posted; notification failed"
     else:

@@ -1,10 +1,20 @@
 import os
 import time
+from dataclasses import dataclass
 from os import listdir
 from os.path import isfile, join
 
+from dataclasses_json import dataclass_json
 from flask import Response
 from werkzeug.exceptions import abort
+
+
+@dataclass_json
+@dataclass
+class Observation:
+    feature: str
+    value: float
+
 
 
 def get_files(mypath):
@@ -23,6 +33,9 @@ def get_last_observation_line(filepath, valType="OBS"):
         return v
 
 
+
+
+
 def compose_CPU(name, value):
     return "CPU,%s,%s,%s\n" % (time.time(), name, value)
 
@@ -32,7 +45,7 @@ def compose_OBS(obs):
 
 
 def is_normalized(float_number):
-    return float_number >= 0.0 and float_number <= 1.0
+    return 0.0 <= float_number <= 1.0
 
 
 def try_parse_object_as(inputObject, parseFunction):

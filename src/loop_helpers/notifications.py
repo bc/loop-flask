@@ -1,22 +1,18 @@
 import json
+from dataclasses import dataclass
 
 import requests
+from dataclasses_json import dataclass_json
+from requests import Response
+from werkzeug.exceptions import abort
+
+from loop_helpers.datafunctions import Observation
 
 
 def get_telegram_token(loop_token: str):
     # TODO make non-hardcoded. will only ping brian via bot.
     return "911638276:AAEe7XkH3B_YNg1mpfRZsjt0jm7QX3nZaCg"
 import os
-
-def get_notification_phonenumber(loop_token:str):
-    target_filepath = "%s_contactinfo.txt"%loop_token
-    if os.path.exists(target_filepath):
-        raise Exception("No contactinfo found")
-    else:
-        with open(target_filepath, "r") as f:
-            lines = [json.loads(x) for x in f.readlines()]
-            print(lines)
-            return lines[0]["value"]
 
 def get_telegram_chat_id(loop_token):
     # TODO make non-hardcoded. will only ping brian via bot.
@@ -41,8 +37,141 @@ def push_telegram_notification(loop_token, message):
         return False
 
 
+@dataclass_json
+@dataclass
+class CellPhone:
+    # phone address is a phone number
+    value: str
+
+
+
+@dataclass_json
+@dataclass
+class Predicate:
+    token: str
+    feature: str
+    trigger_on_true: str
+    value: float
+    # true if the trigger is true with a given observation, for the matching observation type
+    def evaluate(self, o: Observation):
+        if o.feature != self.feature:
+            raise Exception(
+                "wrong observation type %s given to predicate that was expecting a %s" % (o.feature, self.feature))
+        else:
+            return trigger_on_true_evaluation(self.trigger_on_true, current_observation=o.value,threshold=self.value)
+
+def get_predicates(token, DATAFOLDERPATH):
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s_predicates.txt" % token)
+    if not os.path.isfile(target_filepath):
+        return []
+    with open(target_filepath, 'r') as f:
+        firstline = f.readline()
+        preds = json_to_list_of_predicates(firstline)  # [Person(name='lidatong')]
+    return preds
+
+def list_of_predicate_to_json(L):
+    return Predicate.schema().dumps(L, many=True)
+
+
+def json_to_list_of_predicates(firstline):
+    return Predicate.schema().loads(firstline, many=True)
+
+
+
+def parse_predicate(token, ss):
+    input_string = ss.replace("=", "").replace(" ", "")
+
+    if ">" in input_string:
+        eqn_sides = input_string.split(">")
+        eq_type = ">"
+    elif "<" in input_string:
+        eqn_sides = input_string.split("<")
+        eq_type = "<"
+    else:
+        abort(Response(
+            "Error: input should have a > or a < in the statement yours had neither: (%s)." % input_string,
+            status=401))
+
+    if len(eqn_sides) != 2:
+        abort(Response(
+            "Error: input didn't have an element on both sides of the input > or < (%s)." % input_string,
+            status=401))
+    if eq_type not in accepted_comparator_operators():
+        raise Exception("input comparator operator is not valid. input was: %s, should be one of these:" % (
+            eq_type, ",".join(accepted_comparator_operators())))
+
+    if eqn_sides[0] == "predicate_form_obs":
+        return Predicate(token, "obs", eq_type, eqn_sides[1])
+    elif eqn_sides[0] == "predicate_form_cpu":
+        return Predicate(token, "cpu", eq_type, eqn_sides[1])
+    else:
+        abort(Response(
+            "Error: input was not predicate_form_obs or predicate_form_cpu:" % input_string,
+            status=401))
+
+
+
+def accepted_comparator_operators():
+    return [">=","<=","==","!=",">","<"]
+
+def trigger_on_true_evaluation(trigger_on_true, current_observation, threshold):
+    if trigger_on_true == ">":
+        return current_observation > threshold
+    elif trigger_on_true == ">=":
+        return current_observation >= threshold
+    elif trigger_on_true == "<":
+        return current_observation < threshold
+    elif trigger_on_true == "<=":
+        return current_observation <= threshold
+    elif trigger_on_true == "==":
+        return current_observation == threshold
+    elif trigger_on_true == "!=":
+        return current_observation != threshold
+    else:
+        raise Exception("input trigger was invalid. Input was %s; accepted ones are: %s" % (trigger_on_true,",".join(accepted_comparator_operators())))
+
+
+
+
+def predicate_is_triggered(token, o: Observation, DATAFOLDERPATH):
+    predicates = get_predicates(token, DATAFOLDERPATH)
+    if len(predicates) == 0:
+        # if there are no predicates, they can't be triggered
+        return False
+    relevant_predicates = [p for p in predicates if p.feature == o.feature]
+    predicate_matches = [p.evaluate(o) for p in relevant_predicates]
+    print(predicate_matches)
+    result = any(predicate_matches)
+    if result == True:
+        clear_all_predicates(token)
+    return result
+
+def clear_all_predicates(token, DATAFOLDERPATH):
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s_predicates.txt" % token)
+    if os.path.isfile(target_filepath):
+        os.remove(target_filepath)
+    app.logger.info("rm predicates for token %s" % token)
+
+
+
+def clear_contactinfo(token,DATAFOLDERPATH):
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
+    if os.path.isfile(target_filepath):
+        os.remove(target_filepath)
+    app.logger.info("rm contactinfo for token %s" % token)
+
+def get_contactinfo(token, DATAFOLDERPATH):
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
+    if not os.path.isfile(target_filepath):
+        raise Exception("no contact info set for token: %s"%token)
+    with open(target_filepath, 'r') as f:
+        firstline = f.readline()
+        contactinfo = CellPhone.from_json(firstline)
+    return CellPhone.to_json(contactinfo)
+
+
 def text_update(loop_token: str, msg: str):
-    target_number = get_notification_phonenumber(loop_token)
+    target_number = get_contactinfo(loop_token)
     url = "https://api.twilio.com/2010-04-01/Accounts/ACc213f0b60986d196fa19d7e6a1b4fa17/Messages.json"
 
     payload = 'To=%s&From=+12052892818&Body=%s' % (target_number, msg)
