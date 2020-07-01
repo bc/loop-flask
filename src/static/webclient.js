@@ -124,3 +124,16 @@ if (!myToken) {
     window.setInterval(() => GET_data(myToken), 1000);
     console.log("invoked");
 }
+
+
+function set_contactinfo(token, user_cell_formatted){
+    var requestOptions = {
+   method: 'POST',
+   redirect: 'follow'
+};
+
+fetch(`${window.location.protocol}//${window.location.host}/set_contactinfo/?token=${get_token_from_param()}&cell=${user_cell_formatted}`, requestOptions)
+  .then(response => response.text())
+  .then(result => console.log(result))
+  .catch(error => console.log('error', error));
+}

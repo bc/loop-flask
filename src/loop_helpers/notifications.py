@@ -132,7 +132,6 @@ def trigger_on_true_evaluation(trigger_on_true, current_observation, threshold):
 
 
 
-
 def predicate_is_triggered(token, o: Observation, DATAFOLDERPATH):
     predicates = get_predicates(token, DATAFOLDERPATH)
     if len(predicates) == 0:
@@ -143,14 +142,14 @@ def predicate_is_triggered(token, o: Observation, DATAFOLDERPATH):
     print(predicate_matches)
     result = any(predicate_matches)
     if result == True:
-        clear_all_predicates(token)
+        clear_all_predicates(token, DATAFOLDERPATH)
     return result
 
 def clear_all_predicates(token, DATAFOLDERPATH):
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_predicates.txt" % token)
     if os.path.isfile(target_filepath):
         os.remove(target_filepath)
-    app.logger.info("rm predicates for token %s" % token)
+    print("rm predicates for token %s" % token)
 
 
 
@@ -158,7 +157,7 @@ def clear_contactinfo(token,DATAFOLDERPATH):
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
     if os.path.isfile(target_filepath):
         os.remove(target_filepath)
-    app.logger.info("rm contactinfo for token %s" % token)
+    print("rm contactinfo for token %s" % token)
 
 def get_contactinfo(token, DATAFOLDERPATH):
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
@@ -167,14 +166,15 @@ def get_contactinfo(token, DATAFOLDERPATH):
     with open(target_filepath, 'r') as f:
         firstline = f.readline()
         contactinfo = CellPhone.from_json(firstline)
-    return CellPhone.to_json(contactinfo)
+        return contactinfo
 
 
-def text_update(loop_token: str, msg: str):
-    target_number = get_contactinfo(loop_token)
+def text_update(loop_token: str, msg: str,DATAFOLDERPATH):
+    target_number = get_contactinfo(loop_token, DATAFOLDERPATH)
     url = "https://api.twilio.com/2010-04-01/Accounts/ACc213f0b60986d196fa19d7e6a1b4fa17/Messages.json"
 
-    payload = 'To=%s&From=+12052892818&Body=%s' % (target_number, msg)
+    payload = 'To=+%s&From=+12052892818&Body=%s' % (target_number.value, msg)
+
     headers = {
         'Authorization': 'Basic QUNjMjEzZjBiNjA5ODZkMTk2ZmExOWQ3ZTZhMWI0ZmExNzpiNGIzZTkxNzgyM2NkODJhNWFiMTNjNDg4NDc4ZmU3NQ==',
         'Content-Type': 'application/x-www-form-urlencoded'

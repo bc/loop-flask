@@ -1,11 +1,7 @@
 import json
 import logging
 import os
-import pdb
-from dataclasses import dataclass
-from enum import Enum
 
-from dataclasses_json import dataclass_json
 import sentry_sdk
 from flask import Flask, request, jsonify, abort, Response, render_template, redirect
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -14,7 +10,7 @@ from loop_helpers.authentication import validate_token, gen_new_token
 from loop_helpers.datafunctions import get_last_observation_line, try_parse_object_as, compose_CPU, is_normalized, \
     compose_OBS, Observation
 from loop_helpers.notifications import push_telegram_notification, text_update, Predicate, CellPhone, get_contactinfo, \
-    predicate_is_triggered
+    predicate_is_triggered, parse_predicate, list_of_predicate_to_json, get_predicates, clear_all_predicates
 
 app = Flask(__name__)
 DATAFOLDERPATH = "../data"
@@ -62,7 +58,6 @@ def listen():
     return jsonify(payload)
 
 
-
 @app.route('/set_predicates/', methods=['POST', 'GET'])
 def set_predicates():
     token: str = validate_token(request, DATAFOLDERPATH)
@@ -93,7 +88,7 @@ def set_contactinfo():
         status=200)
 
 
-@app.route('/clear_contactinfo/', methods=['POST','GET', 'DELETE'])
+@app.route('/clear_contactinfo/', methods=['POST', 'GET', 'DELETE'])
 def clear_contactinfo():
     token = validate_token(request, DATAFOLDERPATH)
     clear_contactinfo(token)
@@ -103,7 +98,8 @@ def clear_contactinfo():
 @app.route('/get_contactinfo/', methods=['GET'])
 def get_contactinfo_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
-    return get_contactinfo(token, DATAFOLDERPATH)
+    return CellPhone.to_json(get_contactinfo(token, DATAFOLDERPATH))
+
 
 @app.route('/get_predicates/', methods=['GET'])
 def get_predicates_endpoint():
@@ -153,12 +149,12 @@ def update():
     with open(target_filepath, "a") as myfile:
         myfile.write(compose_OBS(obs))
     # notify if it's a boundary observation (just started or just finished)
-    if predicate_is_triggered(token, Observation("obs", obs),DATAFOLDERPATH):
+    if predicate_is_triggered(token, Observation("obs", obs), DATAFOLDERPATH):
         app.logger.info("Sending push notification to BC's phone #TODO twilio")
-        twilio_resp = text_update(token, "Ding! Value is now at \n%s"%obs)
+        twilio_resp = text_update(token, "Loop Says\nobs:%s" % obs, DATAFOLDERPATH)
         # telegram_outcome = push_telegram_notification(token, "@ %s percent" % str(obs * 100))
         if twilio_resp:
-            return "posted; notified @ %s"%json.dumps(twilio_resp)
+            return "posted; notified @ %s" % twilio_resp
         else:
             return "posted; notification failed"
     else:
@@ -185,7 +181,7 @@ def process_update():
         app.logger.info("CPU Predicate triggered")
         telegram_outcome = push_telegram_notification(token, "CPU@ %s " % str(cpu_val))
         if telegram_outcome:
-            return "posted; notified: %s"%json.dumps(telegram_outcome)
+            return "posted; notified: %s" % json.dumps(telegram_outcome)
         else:
             return "posted; notification failed"
     else:
@@ -206,12 +202,15 @@ def newcssheader() -> str:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
 """
 
+
 def link_to_webclient(host_url, token):
     href_target = str(host_url) + "webclient/?token=%s" % str(token)
     return href_target
 
-def doublequoteit(s:str) -> str:
-    return "\"%s\""%s
+
+def doublequoteit(s: str) -> str:
+    return "\"%s\"" % s
+
 
 @app.route('/start')
 def start():
@@ -222,7 +221,7 @@ def start():
 @app.route('/debug-sentry')
 def trigger_error():
     division_by_zero = 1 / 0
-    return (division_by_zero)
+    return division_by_zero
 
 
 # when you run the app directly via python3 app.py or flask run
