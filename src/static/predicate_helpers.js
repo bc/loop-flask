@@ -52,6 +52,9 @@ function show_predicate_post_status(button_id, status, custom_text=""){
 function show_raw_predicate(predicate_sentence,predicate_raw_id){
     document.getElementById(predicate_raw_id).innerText = predicate_sentence;
 }
+
+var predicate_response;
+
 function post_set_predicate(predicate_sentence, button_id, predicate_raw_id){
     var requestOptions = {
         method: 'POST',
@@ -62,13 +65,17 @@ function post_set_predicate(predicate_sentence, button_id, predicate_raw_id){
     show_raw_predicate(predicate_sentence,predicate_raw_id)
     fetch(`/set_predicates/?token=${get_token_from_param()}&predicate=${predicate_sentence}`, requestOptions)
         .then(response => {
-            response.text();
+            predicate_response = response.text();
+            console.log(predicate_response)
             show_predicate_post_status(button_id,SetPredicateStatus.POST_SUCCESS);
         })
         .catch(error => {
+            console.log(error)
             show_predicate_post_status(button_id,SetPredicateStatus.POST_FAIL, error.toString());
         });
 }
 function gen_and_send_predicate(form_id,button_id, predicate_raw_id){
+    console.log('post begin')
     post_set_predicate(predicate_form_into_statement(get_form_elements(form_id)), button_id, predicate_raw_id)
+    console.log('post complete')
 }
