@@ -34,7 +34,7 @@ var endpt = `\"${window.location.protocol}//${window.location.host}/update_obs/?
     };
 
 const mock_post_update_buttons = document.querySelectorAll("#post_obs_onclick");
-Array.from(mock_post_update_buttons).map(x=> x.onclick = () => update_observation(this.innerText))
+Array.from(mock_post_update_buttons).map(x=> x.onclick = () => update_observation(this.progress))
 function millisecondsToStr(milliseconds) {
     // TIP: to find current time in milliseconds, use:
     // var  current_time_milliseconds = new Date().getTime();
