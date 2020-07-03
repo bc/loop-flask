@@ -25,7 +25,7 @@ const update_observation = function(obs_str){
             redirect: 'follow'
         };
         console.log(obs_str + "is the str")
-var endpt = `\"${window.location.protocol}//${window.location.host}/update_obs/?token=${get_token_from_param()}&obs=${obs_str}`;
+var endpt = `${window.location.protocol}//${window.location.host}/update_obs/?token=${get_token_from_param()}&obs=${obs_str}`;
     console.log(endpt);
         fetch(endpt, requestOptions)
             .then(response => response.text())
@@ -33,8 +33,11 @@ var endpt = `\"${window.location.protocol}//${window.location.host}/update_obs/?
             .catch(error => console.log('error', error));
     };
 
-const mock_post_update_buttons = document.querySelectorAll("#post_obs_onclick");
-Array.from(mock_post_update_buttons).map(x=> x.onclick = () => update_observation(this.progress))
+const mock_post_update_button = document.getElementById("post_obs_onclick");
+mock_post_update_button.onclick = function() {
+    update_observation(mock_post_update_button.innerText)
+};
+
 function millisecondsToStr(milliseconds) {
     // TIP: to find current time in milliseconds, use:
     // var  current_time_milliseconds = new Date().getTime();

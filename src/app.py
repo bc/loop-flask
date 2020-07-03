@@ -134,7 +134,7 @@ def process_over_request_ping():
         return "notification_failed"
 
 
-@app.route('/update_obs/', methods=['POST'])
+@app.route('/update_obs/', methods=['POST','GET'])
 def update():
     token = validate_token(request, DATAFOLDERPATH)
     obs: float = try_parse_object_as(request.args.get("obs"), lambda x: float(x))
