@@ -83,7 +83,12 @@
 <h6>Progress</h6><h1 id="obs_val" style="color:#2ca10c">———</h1>
 <kbd id="obs_time">Loading Page</kbd>
 
-<h2>Ping me if:</h2>
+<p>
+    <h3>Set Contact Info</h3>
+        <input type="tel" placeholder="Cell # to text" id="cellnumber_input">
+    <a><button id="cell_set_button" onclick="post_contactinfo(document.getElementById('cellnumber_input').value,'cell_set_button')">Set</button></a>
+</p>
+<h3>Ping me if:</h3>
 
 <form id="set_predicates">
 CPU (where 0.2 means 20% CPU activity)
@@ -104,13 +109,6 @@ CPU (where 0.2 means 20% CPU activity)
 </form>
 <a></a><button id="predicate_set_button" onclick="gen_and_send_predicate('set_predicates', 'predicate_set_button','predicate_raw')">Set</button></form>
 <pre id="predicate_raw"></pre>
-
-
-<p>
-    <h3>Set Contact Info</h3>
-        <input type="tel" placeholder="Cell # to text" id="cellnumber_input">
-    <a><button id="cell_set_button" onclick="post_contactinfo(document.getElementById('cellnumber_input').value,'cell_set_button')">Set</button></a>
-</p>
 
 </body>
     <script type=text/javascript src="static/webclient.js" type="module"></script>
