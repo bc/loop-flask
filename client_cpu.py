@@ -3,8 +3,9 @@ import time
 import json
 import requests
 
-loop_token = "24818a98-4bbf-41c2-a590-fcdc9807bc46"
-host_and_port = "http://127.0.0.1:5000"
+loop_token = input("paste your token e.g. 49dad6a9-bc0d-413c-9e9c-675da85ff3h2")
+host_and_port = input("paste your host and port e.g. http://142.93.117.219:5000")
+# host_and_port = "http://142.93.117.219:5000"
 inter_sample_delay = 30 #
 
 # ISD * X is the amount of time the process can be dead for before notifying a finished process.

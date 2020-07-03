@@ -1,4 +1,5 @@
 import os
+import requests
 from time import sleep
 
 import requests
@@ -21,6 +22,23 @@ coord = (x,y)
 sleep(2)
 RR = os.popen("screencapture /tmp/test.png")
 tempVal = img_and_end_px_to_progress(coord,Image.open("/tmp/test.png"), debug=True)
+
+
+def post_image(target_filepath):
+    url = "http://127.0.0.1:5000/update_screenshot/?token=1df19522-b361-467b-b1c4-0a291b2d55ea"
+    payload = {}
+    files = [
+        ('file',
+         open(target_filepath, 'rb'))
+    ]
+    headers = {}
+    response = requests.request("POST", url, headers=headers, data=payload, files=files)
+    print(response.text.encode('utf8'))
+    return requests
+
+
+post_image("/tmp/test.png")
+
 
 input("It thinks the current percentage is %s Press Enter if the image line looks good, or Control+C to exit"%tempVal)
 
