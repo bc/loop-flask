@@ -87,15 +87,15 @@
 
 
 <form id="set_predicates">
-CPU
+CPU (where 0.2 means 20% CPU activity)
     <input type="checkbox" id="predicate_form_cpu_enabled" name="predicate_form_cpu_enabled" checked>
     <select name="predicate_form_cpu_comparator">
         <option value=">">goes above</option>
         <option value="<">goes below</option>
     </select>
-        <input type="number"  id="predicate_form_cpu_val" name="predicate_form_cpu_val" min="0" max="10" value="0.2" step="0.1">% OR
+        <input type="number"  id="predicate_form_cpu_val" name="predicate_form_cpu_val" min="0" max="10" value="0.2" step="0.1"> OR
     <input type="checkbox" id="predicate_form_obs_enabled" name="predicate_form_obs_enabled" checked>
-    Progress
+    Progress (where 0.9 means 90% complete)
         <select name="predicate_form_obs_comparator" >
         <option value=">">goes above</option>
         <option value="<">goes below</option>
