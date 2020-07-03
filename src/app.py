@@ -147,7 +147,7 @@ def update():
     # Make sure the float input is between 0 and 1
     if not is_normalized(obs):
         abort(Response(
-            "Error: you can only push float numbers between 0 and 1 (e.g. 0.25 or 0.70). You entered (%s)." % obs,
+            "Error: You can only push float numbers between 0 and 1 (e.g. 0.25 or 0.70). You entered (%s)." % obs,
             status=401))
     # make the observation
     target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
