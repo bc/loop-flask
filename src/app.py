@@ -163,6 +163,7 @@ def update():
 def ping_user(obs, token, message_type):
     app.logger.info("Sending %s push notification to user phone"% message_type)
     twilio_resp = text_update(token, "Loop Says\n%s:%s" % (message_type,obs), DATAFOLDERPATH)
+    print(twilio_resp)
     if twilio_resp:
         return "posted; notified"
     else:
