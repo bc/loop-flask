@@ -1,47 +1,27 @@
 {
 	"info": {
-		"_postman_id": "fda072f9-2cdf-4fd7-8613-97ad0f3e2741",
+		"_postman_id": "43c419bf-a802-40b3-8b8b-f198eb8caae9",
 		"name": "loop",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "update",
+			"name": "Set predicate",
 			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/x-www-form-urlencoded",
-						"type": "text",
-						"disabled": true
-					},
-					{
-						"key": "token",
-						"value": "c84d76b1-44c4-4538-b135-ecb627615990",
-						"type": "text",
-						"disabled": true
-					},
-					{
-						"key": "val",
-						"value": "5",
-						"type": "text",
-						"disabled": true
-					}
-				],
+				"method": "POST",
+				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:5000/update/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873&obs=0.2999",
+					"raw": "http://0.0.0.0:5000/set_predicates/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873&predicate=obs>0.8",
 					"protocol": "http",
 					"host": [
-						"127",
 						"0",
 						"0",
-						"1"
+						"0",
+						"0"
 					],
 					"port": "5000",
 					"path": [
-						"update",
+						"set_predicates",
 						""
 					],
 					"query": [
@@ -50,8 +30,8 @@
 							"value": "3311f6d4-b4ba-498a-a3ad-b6989fcbb873"
 						},
 						{
-							"key": "obs",
-							"value": "0.2999"
+							"key": "predicate",
+							"value": "obs>0.8"
 						}
 					]
 				}
@@ -59,13 +39,43 @@
 			"response": []
 		},
 		{
-			"name": "http://127.0.0.1:5000/process_update/?token=ffdc1f83-66b0-4386-a1d3-d8b924274b28",
+			"name": "Get Predicates",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:5000/get_predicates/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "5000",
+					"path": [
+						"get_predicates",
+						""
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "3311f6d4-b4ba-498a-a3ad-b6989fcbb873"
+						}
+					]
+				},
+				"description": "gets a list of predicates for a given valid token"
+			},
+			"response": []
+		},
+		{
+			"name": "Update Observation",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"pid\": 27677, \"name\": \"AAR\", \"username\": \"Olive\", \"vms\": 6281.1953125, \"cpu\": 90.7}",
+					"raw": "",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -73,7 +83,56 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:5000/process_update/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873",
+					"raw": "http://0.0.0.0:5000/update_obs/?token=1df19522-b361-467b-b1c4-0a291b2d55ea&obs=0.9001",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "5000",
+					"path": [
+						"update_obs",
+						""
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "1df19522-b361-467b-b1c4-0a291b2d55ea"
+						},
+						{
+							"key": "obs",
+							"value": "0.9001"
+						}
+					]
+				},
+				"description": "upload an obs value between 0 and 1.\nif one of the predicates are hit, it'll say posted; notified. If not, it'll just say 'posted'"
+			},
+			"response": []
+		},
+		{
+			"name": "Upload Screenshot",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/Users/briancohn/Documents/GitHub/bc/abf/abf_formant/Assets/Prefabs/AB - Logo - PNG(1).png"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/update_screenshot/?token=1df19522-b361-467b-b1c4-0a291b2d55ea",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -83,7 +142,81 @@
 					],
 					"port": "5000",
 					"path": [
-						"process_update",
+						"update_screenshot",
+						""
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "1df19522-b361-467b-b1c4-0a291b2d55ea"
+						}
+					]
+				},
+				"description": "upload an obs value between 0 and 1.\nif one of the predicates are hit, it'll say posted; notified. If not, it'll just say 'posted'"
+			},
+			"response": []
+		},
+		{
+			"name": "Update CPU",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\": \"brian\",\n\t\"cpu\": 0.9\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://0.0.0.0:5000/update_cpu/?token=1df19522-b361-467b-b1c4-0a291b2d55ea",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "5000",
+					"path": [
+						"update_cpu",
+						""
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "1df19522-b361-467b-b1c4-0a291b2d55ea"
+						},
+						{
+							"key": "cpu",
+							"value": "0.9001",
+							"disabled": true
+						}
+					]
+				},
+				"description": "upload an obs value between 0 and 1.\nif one of the predicates are hit, it'll say posted; notified. If not, it'll just say 'posted'"
+			},
+			"response": []
+		},
+		{
+			"name": "Clear Predicates",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:5000/clear_predicates/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "5000",
+					"path": [
+						"clear_predicates",
 						""
 					],
 					"query": [
@@ -92,25 +225,84 @@
 							"value": "3311f6d4-b4ba-498a-a3ad-b6989fcbb873"
 						}
 					]
+				},
+				"description": "deletes predicate file for validated token, if it exists"
+			},
+			"response": []
+		},
+		{
+			"name": "twilio text",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "ACc213f0b60986d196fa19d7e6a1b4fa17",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "b4b3e917823cd82a5ab13c488478fe75",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "To",
+							"value": "+13108007011",
+							"type": "text"
+						},
+						{
+							"key": "From",
+							"value": "+12052892818",
+							"type": "text"
+						},
+						{
+							"key": "Body",
+							"value": "MESSAGE",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://api.twilio.com/2010-04-01/Accounts/ACc213f0b60986d196fa19d7e6a1b4fa17/Messages.json",
+					"protocol": "https",
+					"host": [
+						"api",
+						"twilio",
+						"com"
+					],
+					"path": [
+						"2010-04-01",
+						"Accounts",
+						"ACc213f0b60986d196fa19d7e6a1b4fa17",
+						"Messages.json"
+					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "http://127.0.0.1:5000/listen/?token=ffdc1f83-66b0-4386-a1d3-d8b924274b28",
+			"name": "Get Observation",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://142.93.117.219:8000/listen/?token=3311f6d4-b4ba-498a-a3ad-b6989fcbb873",
+					"raw": "http://127.0.0.1:5000/listen/?token=f5ba6ef0-934b-4e6a-b1b6-2089272ac2c4",
 					"protocol": "http",
 					"host": [
-						"142",
-						"93",
-						"117",
-						"219"
+						"127",
+						"0",
+						"0",
+						"1"
 					],
-					"port": "8000",
+					"port": "5000",
 					"path": [
 						"listen",
 						""
@@ -118,7 +310,145 @@
 					"query": [
 						{
 							"key": "token",
-							"value": "3311f6d4-b4ba-498a-a3ad-b6989fcbb873"
+							"value": "f5ba6ef0-934b-4e6a-b1b6-2089272ac2c4"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Set Contact Info",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:5000/set_contactinfo/?token=0fbb3598-2fe3-41b9-b8a4-f9383db584bb&cell=13108007011",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "5000",
+					"path": [
+						"set_contactinfo",
+						""
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "0fbb3598-2fe3-41b9-b8a4-f9383db584bb"
+						},
+						{
+							"key": "cell",
+							"value": "13108007011"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Contact Info",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:5000/set_contactinfo/?token=0fbb3598-2fe3-41b9-b8a4-f9383db584bb&cell=13108007011",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "5000",
+					"path": [
+						"set_contactinfo",
+						""
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "0fbb3598-2fe3-41b9-b8a4-f9383db584bb"
+						},
+						{
+							"key": "cell",
+							"value": "13108007011"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Clear Contact Info",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:5000/clear_contactinfo/?token=0fbb3598-2fe3-41b9-b8a4-f9383db584bb",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "5000",
+					"path": [
+						"clear_contactinfo",
+						""
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "0fbb3598-2fe3-41b9-b8a4-f9383db584bb"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "twilio lookup #",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "ACc213f0b60986d196fa19d7e6a1b4fa17",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "b4b3e917823cd82a5ab13c488478fe75",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://lookups.twilio.com/v1/PhoneNumbers/5108675310?Type=carrier",
+					"protocol": "https",
+					"host": [
+						"lookups",
+						"twilio",
+						"com"
+					],
+					"path": [
+						"v1",
+						"PhoneNumbers",
+						"5108675310"
+					],
+					"query": [
+						{
+							"key": "Type",
+							"value": "carrier"
 						}
 					]
 				}
