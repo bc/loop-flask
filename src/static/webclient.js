@@ -12,10 +12,11 @@ function get_token_from_param() {
 }
 
 function b_handle(d) {
-    datalist.unshift(d);
+    var response = JSON.parse(d)
+    datalist.unshift(response);
     update_rawconsole();
-    update_live_progress(d["OBS"]);
-    update_live_cpu(d["CPU"]);
+    update_live_progress(response["OBS"]);
+    update_live_cpu(response["CPU"]);
 }
 
 
@@ -103,15 +104,15 @@ function update_live_progress(observation) {
 }
 
 function GET_data(token) {
-    var settings = {
-        "url": `/listen/?token=${token}`,
-        "method": "GET",
-        "timeout": 0,
-    };
-    //todo err handling
-    $.ajax(settings).done(function (response) {
-        b_handle(response);
-    })
+var requestOptions = {
+  method: 'GET',
+  redirect: 'follow'
+};
+
+fetch("/listen/?token=e8f093e1-183a-4a71-a0a2-6740254e812b", requestOptions)
+  .then(response => response.text())
+  .then(result => b_handle(result))
+  .catch(error => console.log('error', error));
 }
 
 let datalist = [];

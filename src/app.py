@@ -61,8 +61,9 @@ def listen():
 @app.route('/set_predicates/', methods=['POST', 'GET'])
 def set_predicates():
     token: str = validate_token(request, DATAFOLDERPATH)
+    input_predicates = request.args.get("predicate")
     preds: [Predicate] = [try_parse_object_as(YY, lambda x: parse_predicate(token, x)) for YY in
-                          request.args.get("predicate").split(";")]
+                          input_predicates.split(";")]
 
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_predicates.txt" % token)
     # overwrite prior predicate
@@ -77,7 +78,9 @@ def set_predicates():
 @app.route('/set_contactinfo/', methods=['POST', 'GET'])
 def set_contactinfo():
     token: str = validate_token(request, DATAFOLDERPATH)
-    cell_no: CellPhone = try_parse_object_as(request.args.get("cell"), CellPhone)
+    payload: str = request.args.get("cell")
+    cell_int: int = try_parse_object_as(payload, int)
+    cell_no = CellPhone(cell_int)
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
     # overwrite prior contact info
     with open(target_filepath, "w") as myfile:

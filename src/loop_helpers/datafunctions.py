@@ -6,7 +6,7 @@ from os.path import isfile, join
 
 from dataclasses_json import dataclass_json
 from flask import Response
-from werkzeug.exceptions import abort
+from flask import abort
 
 
 @dataclass_json

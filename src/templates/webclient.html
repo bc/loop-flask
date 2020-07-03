@@ -20,7 +20,7 @@
 <body>
 <a>
 <header>
-    <h1>Loop Web Client v0.1.2</h1>
+    <h1>Loop Web Client v0.2.0</h1>
 </header>
 <details open>
 <!--    <summary>Setup</summary>-->
@@ -66,7 +66,9 @@
 <h6>Progress</h6><h1 id="obs_val" style="color:#2ca10c">———</h1>
 <kbd id="obs_time">Loading Page</kbd>
 
-<h3>Ping me if:</h3>
+<h2>Ping me if:</h2>
+
+
 <form id="set_predicates">
 CPU
     <input type="checkbox" id="predicate_form_cpu_enabled" name="predicate_form_cpu_enabled" checked>
@@ -74,7 +76,6 @@ CPU
         <option value=">">goes above</option>
         <option value="<">goes below</option>
     </select>
-
         <input type="number"  id="predicate_form_cpu_val" name="predicate_form_cpu_val" min="0" max="1000" value="10">% OR
     <input type="checkbox" id="predicate_form_obs_enabled" name="predicate_form_obs_enabled" checked>
     Progress
@@ -83,18 +84,18 @@ CPU
         <option value="<">goes below</option>
     </select>
 
-        <input type="number"   id="predicate_form_obs_val" name="predicate_form_obs_val" min="0.0" max="1.0" value="0.9">
-
+        <input type="number" id="predicate_form_obs_val" name="predicate_form_obs_val" min="0.0" max="1.0" value="0.9" step="0.1">
 </form>
-<a></a><button id="predicate_set_button">Set</button></a>
+<a></a><button id="predicate_set_button" onclick="gen_and_send_predicate('set_predicates', 'predicate_set_button','predicate_raw')">Set</button></form>
+<pre id="predicate_raw"></pre>
+
 
 <p>
     <h3>Set Contact Info</h3>
-<p>
-
+        <input type="tel" placeholder="Cell # to text" id="cellnumber_input">
+        Include the <a href="https://countrycode.org/">country code</a> (e.g. 1 for US)
+    <a><button id="cell_set_button" onclick="post_contactinfo(document.getElementById('cellnumber_input').value,'cell_set_button')">Set</button></a>
 </p>
-</p>
-<pre id="predicate_raw"></pre>
 
 
 

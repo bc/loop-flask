@@ -4,10 +4,9 @@ from dataclasses import dataclass
 import requests
 from dataclasses_json import dataclass_json
 from requests import Response
-from werkzeug.exceptions import abort
 
 from loop_helpers.datafunctions import Observation
-
+from flask import abort
 
 def get_telegram_token(loop_token: str):
     # TODO make non-hardcoded. will only ping brian via bot.
@@ -40,10 +39,8 @@ def push_telegram_notification(loop_token, message):
 @dataclass_json
 @dataclass
 class CellPhone:
-    # phone address is a phone number
-    value: str
-
-
+    # phone address is a phone number with the country code in front e.g. 13237775555. no + or - or ()
+    value: int
 
 @dataclass_json
 @dataclass
@@ -79,7 +76,12 @@ def json_to_list_of_predicates(firstline):
 
 
 def parse_predicate(token, ss):
+    if len(ss) < 1:
+        abort(Response(
+            "Error: input was empty.",
+            status=401))
     input_string = ss.replace("=", "").replace(" ", "")
+
 
     if ">" in input_string:
         eqn_sides = input_string.split(">")
@@ -164,8 +166,8 @@ def get_contactinfo(token, DATAFOLDERPATH):
     if not os.path.isfile(target_filepath):
         raise Exception("no contact info set for token: %s"%token)
     with open(target_filepath, 'r') as f:
-        firstline = f.readline()
-        contactinfo = CellPhone.from_json(firstline)
+        firstline: str = f.readline()
+        contactinfo: CellPhone = CellPhone.from_json(firstline)
         return contactinfo
 
 
