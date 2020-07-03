@@ -10,7 +10,8 @@ from loop_helpers.authentication import validate_token, gen_new_token
 from loop_helpers.datafunctions import get_last_observation_line, try_parse_object_as, compose_CPU, is_normalized, \
     compose_OBS, Observation
 from loop_helpers.notifications import push_telegram_notification, text_update, Predicate, CellPhone, get_contactinfo, \
-    predicate_is_triggered, parse_predicate, list_of_predicate_to_json, get_predicates, clear_all_predicates
+    predicate_is_triggered, parse_predicate, list_of_predicate_to_json, get_predicates, clear_all_predicates, \
+    clear_contactinfo, verify_cellnumber
 
 app = Flask(__name__)
 DATAFOLDERPATH = "../data"
@@ -80,7 +81,8 @@ def set_contactinfo():
     token: str = validate_token(request, DATAFOLDERPATH)
     payload: str = request.args.get("cell")
     cell_int: int = try_parse_object_as(payload, int)
-    cell_no = CellPhone(cell_int)
+    better_cell_number = verify_cellnumber(cell_int)
+    cell_no = CellPhone(better_cell_number)
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
     # overwrite prior contact info
     with open(target_filepath, "w") as myfile:
@@ -92,9 +94,9 @@ def set_contactinfo():
 
 
 @app.route('/clear_contactinfo/', methods=['POST', 'GET', 'DELETE'])
-def clear_contactinfo():
+def clear_contactinfo_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
-    clear_contactinfo(token)
+    clear_contactinfo(token, DATAFOLDERPATH)
     return Response("cleared", status=200)
 
 

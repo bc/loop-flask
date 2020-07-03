@@ -1,9 +1,9 @@
-const obs_val = document.getElementById("obs_val")
-const obs_time = document.getElementById("obs_time")
+const obs_val = document.getElementById("obs_val");
+const obs_time = document.getElementById("obs_time");
 
-const cpu_val = document.getElementById("cpu_val")
-const cpu_time = document.getElementById("cpu_time")
-
+const cpu_val = document.getElementById("cpu_val");
+const cpu_time = document.getElementById("cpu_time");
+cpu_title_element = document.getElementById("cpu_title");
 
 function get_token_from_param() {
     var url = new URL(window.location);
@@ -12,9 +12,8 @@ function get_token_from_param() {
 }
 
 function b_handle(d) {
-    var response = JSON.parse(d)
+    var response = JSON.parse(d);
     datalist.unshift(response);
-    update_rawconsole();
     update_live_progress(response["OBS"]);
     update_live_cpu(response["CPU"]);
 }
@@ -25,8 +24,8 @@ const update_observation = function(obs_str){
             method: 'POST',
             redirect: 'follow'
         };
-        console.log(obs_str + "is the str")
-var endpt = `${window.location.protocol}//${window.location.host}/update_obs/?token=${get_token_from_param()}&obs=${obs_str}`;
+        console.log(obs_str + "is the str");
+var endpt = `/update_obs/?token=${get_token_from_param()}&obs=${obs_str}`;
     console.log(endpt);
         fetch(endpt, requestOptions)
             .then(response => response.text())
@@ -34,12 +33,14 @@ var endpt = `${window.location.protocol}//${window.location.host}/update_obs/?to
             .catch(error => console.log('error', error));
     };
 
-const mock_post_update_button = document.getElementById("post_obs_onclick");
-mock_post_update_button.onclick = function() {
-    update_observation(mock_post_update_button.innerText)
-};
+const mock_post_update_button = document.getElementsByClassName("post_obs_onclick");
+Array.from(mock_post_update_button).map(function(x){
+    x.onclick = function() {
+    update_observation(x.innerText)
+}})
 
-function millisecondsToStr(milliseconds) {
+
+function milliseconds_to_human_readable(s) {
     // TIP: to find current time in milliseconds, use:
     // var  current_time_milliseconds = new Date().getTime();
 
@@ -47,7 +48,7 @@ function millisecondsToStr(milliseconds) {
         return (number > 1) ? 's' : '';
     }
 
-    var temp = Math.floor(milliseconds / 1000);
+    var temp = Math.floor(s );
     var years = Math.floor(temp / 31536000);
     if (years) {
         return years + ' year' + numberEnding(years);
@@ -74,14 +75,8 @@ function millisecondsToStr(milliseconds) {
 
 function update_live_cpu(proc) {
     cpu_val.innerText = `${proc.value.toFixed(2)}`
-    cpu_title_element = document.getElementById("cpu_title");
     cpu_title_element.innerText = `${proc.name}: Current CPU Use`
-    cpu_time.innerText = `Updated ${((Date.now() / 1000) - proc.unixtime).toFixed(4)}s ago`;
-}
-
-function delta_time_human_readable(unix_seconds) {
-    var elapsed_str = millisecondsToStr(((Date.now() / 1000) - unix_seconds).toFixed(4));
-    return elapsed_str;
+    cpu_time.innerText = `Updated ${milliseconds_to_human_readable(((Date.now() / 1000) - proc.unixtime))} ago`;
 }
 
 function getQueryVariable(variable) {
@@ -97,10 +92,8 @@ function getQueryVariable(variable) {
 }
 
 function update_live_progress(observation) {
-    // console.log(`observation: ${observation.toString()}`);
     obs_val.innerText = `${observation.value.toFixed(2)}`;
-    var elapsed_str = delta_time_human_readable(observation.unixtime);
-    obs_time.innerText = `Updated ${elapsed_str} ago`;
+    obs_time.innerText = `Updated ${milliseconds_to_human_readable((Date.now() / 1000) - observation.unixtime)} ago`;
 }
 
 function GET_data(token) {
@@ -108,18 +101,21 @@ var requestOptions = {
   method: 'GET',
   redirect: 'follow'
 };
-
-fetch("/listen/?token=e8f093e1-183a-4a71-a0a2-6740254e812b", requestOptions)
-  .then(response => response.text())
+var listen_response_code;
+fetch(`/listen/?token=${get_token_from_param()}`, requestOptions)
+  .then(function(response){
+      response_status = response.status;
+      if (response_status != 200){
+          alert("Sorry! Your token is invalid, please make a new one")
+          return;
+      }
+      return response.text()
+  })
   .then(result => b_handle(result))
   .catch(error => console.log('error', error));
 }
 
 let datalist = [];
-function update_rawconsole() {
-    var console_element = document.getElementById("jsonRaw");
-    console_element.innerText = JSON.stringify(datalist, undefined, 4);
-}
 
 var myToken = getQueryVariable("token")
 if (!myToken) {

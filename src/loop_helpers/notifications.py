@@ -153,6 +153,16 @@ def clear_all_predicates(token, DATAFOLDERPATH):
         os.remove(target_filepath)
     print("rm predicates for token %s" % token)
 
+def verify_cellnumber(cell_number):
+    url = "https://lookups.twilio.com/v1/PhoneNumbers/%s?Type=carrier"%str(cell_number)
+    payload = {}
+    headers = {
+        'Authorization': 'Basic QUNjMjEzZjBiNjA5ODZkMTk2ZmExOWQ3ZTZhMWI0ZmExNzpiNGIzZTkxNzgyM2NkODJhNWFiMTNjNDg4NDc4ZmU3NQ=='
+    }
+    response = requests.request("GET", url, headers=headers, data=payload)
+    data_response = json.loads(response.text.encode('utf8'))
+    print(data_response) # Todo some error handling to give a more informative response to js
+    return(data_response["phone_number"])
 
 
 def clear_contactinfo(token,DATAFOLDERPATH):

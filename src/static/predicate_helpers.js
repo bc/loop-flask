@@ -92,6 +92,18 @@ function post_contactinfo(cell_number, document_id_for_status) {
     };
     const status_object = document.getElementById(document_id_for_status)
     var response_status;
+    cell_number = cell_number.trim();
+    //if they entered nothing
+    if(cell_number == ""){
+        alert("You gave a blank phone number");
+        status_object.style = "background-color: yellow;"
+        return;
+        //if it's not a pure number
+    } else if (/^\d+$/.test(cell_number)==false){
+        alert("No symbols please, try again with only digits")
+        status_object.style = "background-color: yellow;"
+        return;
+    }
     fetch(`/set_contactinfo/?token=${get_token_from_param()}&cell=${cell_number}`, requestOptions)
         .then(function(response){
             response_status = response.status;

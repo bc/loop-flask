@@ -47,8 +47,20 @@
     </script>
 <p>
 
-    <a><button id="post_obs_onclick">0.2</button></a>
+    <a><button class="post_obs_onclick">0.0</button></a>
+     <a><button class="post_obs_onclick">0.2</button></a>
+     <a><button class="post_obs_onclick">0.4</button></a>
+     <a><button class="post_obs_onclick">0.6</button></a>
+     <a><button class="post_obs_onclick">0.8</button></a>
+     <a><button class="post_obs_onclick">1.0</button></a>
 </p>
+    <p>
+     <a><button class="post_cpu_onclick">0.0</button></a>
+     <a><button class="post_cpu_onclick">0.1</button></a>
+     <a><button class="post_cpu_onclick">1.0</button></a>
+     <a><button class="post_cpu_onclick">4.0</button></a>
+
+    </p>
 <p>
 
     <a href="https://curl.trillworks.com/">
@@ -93,13 +105,8 @@ CPU
 <p>
     <h3>Set Contact Info</h3>
         <input type="tel" placeholder="Cell # to text" id="cellnumber_input">
-        Include the <a href="https://countrycode.org/">country code</a> (e.g. 1 for US)
     <a><button id="cell_set_button" onclick="post_contactinfo(document.getElementById('cellnumber_input').value,'cell_set_button')">Set</button></a>
 </p>
-
-
-
-<pre id="jsonRaw" style="font-size: 3px; margin-top: 80px"></pre>
 
 <h6>Request</h6>
 <pre>{{request}}</pre>
