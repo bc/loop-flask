@@ -155,16 +155,25 @@ def update():
         myfile.write(compose_OBS(obs))
     # notify if it's a boundary observation (just started or just finished)
     if predicate_is_triggered(token, Observation("obs", obs), DATAFOLDERPATH):
-        app.logger.info("Sending push notification to BC's phone #TODO twilio")
-        twilio_resp = text_update(token, "Loop Says\nobs:%s" % obs, DATAFOLDERPATH)
-        # telegram_outcome = push_telegram_notification(token, "@ %s percent" % str(obs * 100))
-        if twilio_resp:
-            return "posted; notified @ %s" % twilio_resp
-        else:
-            return "posted; notification failed"
+        return ping_user(obs, token, "obs")
     else:
         return "posted"
 
+
+def ping_user(obs, token, message_type):
+    app.logger.info("Sending %s push notification to user phone"% message_type)
+    twilio_resp = text_update(token, "Loop Says\n%s:%s" % (message_type,obs), DATAFOLDERPATH)
+    if twilio_resp:
+        return "posted; notification id: %s"%twilio_resp['sid']
+    else:
+        return "posted; notification failed"
+
+@app.route('/update_screenshot/', methods=['POST'])
+def update_screenshot_endpoint():
+    token = validate_token(request, DATAFOLDERPATH)
+    f = request.files['file']
+    f.save(os.path.join(DATAFOLDERPATH,"%s.png"%token))
+    return "posted"
 
 @app.route('/update_cpu/', methods=['POST'])
 def process_update():
@@ -183,12 +192,7 @@ def process_update():
         myfile.write(compose_CPU(process_name, cpu_val))
     # Notify if it's a boundary observation (just started or just finished)
     if predicate_is_triggered(token, Observation("cpu", cpu_val), DATAFOLDERPATH):
-        app.logger.info("CPU Predicate triggered")
-        telegram_outcome = push_telegram_notification(token, "CPU@ %s " % str(cpu_val))
-        if telegram_outcome:
-            return "posted; notified: %s" % json.dumps(telegram_outcome)
-        else:
-            return "posted; notification failed"
+        return ping_user(cpu_val, token, "cpu")
     else:
         return "posted"
 

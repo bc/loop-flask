@@ -19,7 +19,7 @@ function b_handle(d) {
 }
 
 
-const update_observation = function(obs_str){
+function update_observation(obs_str){
         var requestOptions = {
             method: 'POST',
             redirect: 'follow'
@@ -33,10 +33,36 @@ var endpt = `/update_obs/?token=${get_token_from_param()}&obs=${obs_str}`;
             .catch(error => console.log('error', error));
     };
 
-const mock_post_update_button = document.getElementsByClassName("post_obs_onclick");
-Array.from(mock_post_update_button).map(function(x){
+
+function update_cpu(cpu_value){
+        var myHeaders = new Headers();
+myHeaders.append("Content-Type", "application/json");
+
+var raw = JSON.stringify({"name":"WebClient Manual Entry","cpu":cpu_value});
+
+var requestOptions = {
+  method: 'POST',
+  headers: myHeaders,
+  body: raw,
+  redirect: 'follow'
+};
+
+fetch(`update_cpu/?token=${get_token_from_param()}`, requestOptions)
+  .then(response => response.text())
+  .then(result => console.log(result))
+  .catch(error => console.log('error', error));
+}
+
+const mock_post_update_obs_button = document.getElementsByClassName("post_obs_onclick");
+Array.from(mock_post_update_obs_button).map(function(x){
     x.onclick = function() {
     update_observation(x.innerText)
+}})
+
+const mock_post_update_cpu_button = document.getElementsByClassName("post_cpu_onclick");
+Array.from(mock_post_update_cpu_button).map(function(x){
+    x.onclick = function() {
+    update_cpu(x.innerText)
 }})
 
 

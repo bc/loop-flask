@@ -193,4 +193,4 @@ def text_update(loop_token: str, msg: str,DATAFOLDERPATH):
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
-    return (response.text.encode('utf8'))
+    return (response.json())
