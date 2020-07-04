@@ -60,11 +60,8 @@ def post_process_progress(target_process_name, host_socket, token):
         return "process_not_found"
     payload: str = json.dumps(only_target_name[0])
     url: str = "%s/update_cpu/?token=%s" % (host_socket, token)
-    headers = {
-        'Content-Type': 'application/json'
-    }
     try:
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload)
         print("%s\n" % payload + str(response.text))
         return "submitted"
         # TODO warn if token is wrong
@@ -82,24 +79,23 @@ def main(host_and_port, loop_token, inter_sample_delay, cooldown_timer):
     test_number = int(test_text)
     target_process_name = procs[test_number]['name']
     print('Tracking process: %s' % target_process_name)
-    try:
-        while True:
-            outcome = post_process_progress(target_process_name, host_and_port, loop_token)
-            if outcome == "process_not_found":
-                print('Process has been missing. %s lives left' % cooldown_timer)
-                if cooldown_timer == 0:
-                    print("process definitely died")
-                    os.system('afplay /System/Library/Sounds/Glass.aiff')
-                    return
-                    # TODO post_process_at_neg1(target_process_name,host_and_port,loop_token)
-                # if the process still has 'lives' left
-                cooldown_timer -= 1
-            time.sleep(inter_sample_delay)
-    except KeyboardInterrupt:
-        print("Ended Tracking")
-        os.system('afplay /System/Library/Sounds/Glass.aiff')
-        # TODO print("sending end tracking POST note to server")
-        return
+    while True:
+        outcome = post_process_progress(target_process_name, host_and_port, loop_token)
+        if outcome == "process_not_found":
+            print('Process has been missing. %s lives left' % cooldown_timer)
+            if cooldown_timer == 0:
+                print("process definitely died")
+                os.system('afplay /System/Library/Sounds/Glass.aiff')
+                return
+                # TODO post_process_at_neg1(target_process_name,host_and_port,loop_token)
+            # if the process still has 'lives' left
+            cooldown_timer -= 1
+        time.sleep(inter_sample_delay)
+    # except KeyboardInterrupt:
+    #     print("Ended Tracking")
+    #     os.system('afplay /System/Library/Sounds/Glass.aiff')
+    #     # TODO print("sending end tracking POST note to server")
+    #     return
 
 
 if __name__ == "__main__":
