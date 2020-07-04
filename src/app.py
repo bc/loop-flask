@@ -1,4 +1,4 @@
-import json
+import logging
 import logging
 import os
 
@@ -109,7 +109,7 @@ def get_contactinfo_endpoint():
 @app.route('/get_predicates/', methods=['GET'])
 def get_predicates_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
-    predicates = get_predicates(token,DATAFOLDERPATH)
+    predicates = get_predicates(token, DATAFOLDERPATH)
     return Response(
         list_of_predicate_to_json(predicates),
         status=200)
@@ -139,7 +139,7 @@ def process_over_request_ping():
         return "notification_failed"
 
 
-@app.route('/update_obs/', methods=['POST','GET'])
+@app.route('/update_obs/', methods=['POST', 'GET'])
 def update():
     token = validate_token(request, DATAFOLDERPATH)
     obs: float = try_parse_object_as(request.args.get("obs"), lambda x: float(x))
@@ -161,20 +161,22 @@ def update():
 
 
 def ping_user(obs, token, message_type):
-    app.logger.info("Sending %s push notification to user phone"% message_type)
-    twilio_resp = text_update(token, "Loop Says\n%s:%s" % (message_type,obs), DATAFOLDERPATH)
+    app.logger.info("Sending %s push notification to user phone" % message_type)
+    twilio_resp = text_update(token, "Loop Says\n%s:%s" % (message_type, obs), DATAFOLDERPATH)
     print(twilio_resp)
     if twilio_resp:
         return "posted; notified"
     else:
         return "posted; notification failed"
 
+
 @app.route('/update_screenshot/', methods=['POST'])
 def update_screenshot_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
     f = request.files['file']
-    f.save(os.path.join(DATAFOLDERPATH,"%s.png"%token))
+    f.save(os.path.join(DATAFOLDERPATH, "%s.png" % token))
     return "posted"
+
 
 @app.route('/update_cpu/', methods=['POST'])
 def process_update():
