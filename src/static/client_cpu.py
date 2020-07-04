@@ -1,7 +1,7 @@
 # Generate a token here: 142.93.117.219:5000/
 import os
-print(
-    "Installing\n _psutil_ to examine CPU processes and _requests_ to handle networking")
+
+print("Installing\n _psutil_ to examine CPU processes and _requests_ to handle networking")
 res = os.system("pip3 install psutil requests")
 print(res)
 print('Installation complete')
@@ -14,22 +14,23 @@ import sys
 
 input("Once your process is running, press Enter\n")
 
+
 # Function must be called with root on mac due to an OS limitation
 def processes_by_cpu():
     # this one initializes proc. ignore output
     [extract_process_info(proc) for proc in psutil.process_iter()]
     time.sleep(1)
-    listOfProcObjects = [extract_process_info(proc) for proc in psutil.process_iter()]
-    listOfProcObjects = filter(lambda x: x is not None, listOfProcObjects)
+    list_of_procs = [extract_process_info(proc) for proc in psutil.process_iter()]
+    list_of_procs = filter(lambda x: x is not None, list_of_procs)
     # Sort list of dict by key i.e. cpu
-    sortedL = sorted(listOfProcObjects, key=lambda procObj: procObj['cpu'], reverse=True)
-    return sortedL
+    sorted_list = sorted(list_of_procs, key=lambda proc: proc['cpu'], reverse=True)
+    return sorted_list
 
 
 # returns None if there's an error.
 def process_name_on_blacklist(input_process_name):
-    blacklist = ["routined", "remindd", "Spotify", "Activity Monitor",
-                 "Google Drive File Stream"]
+    # blacklist = ["routined", "remindd", "Spotify", "Activity Monitor",
+    #              "Google Drive File Stream"]
     blacklist = []
     no_hits = sum([input_process_name.lower() in x.lower() for x in blacklist]) != 0
     return no_hits
@@ -45,16 +46,15 @@ def extract_process_info(proc):
         pinfo['rss_bytes'] = proc.memory_info().rss
         pinfo['cpu'] = proc.cpu_percent(interval=None) / 100.0  # convert to fraction
         return pinfo
-    except:
+    except Exception as e:
+        print("Had exception when extracting process info: " % e)
         return None
 
 
 def post_process_progress(target_process_name, host_socket, token):
     assert host_socket.endswith("/") is not True
-    res = processes_by_cpu()  # [0:N]
-    only_target_name = list(filter(lambda x: x["name"] == target_process_name, res))
+    only_target_name = list(filter(lambda x: x["name"] == target_process_name, processes_by_cpu()))
     if len(only_target_name) == 0:
-        only_target_name = ["process_not_found"]
         print("%s process not found! Maybe it's done" % target_process_name)
         # TODO send null result
         return "process_not_found"
@@ -70,20 +70,18 @@ def post_process_progress(target_process_name, host_socket, token):
         # TODO warn if token is wrong
     except Exception as e:
         # soft err
-        print(
-            "Couldn't send this observation to the server. Confirm you're connected to the internet, and that the token is correct! ERR: %s" % e)
+        print("Error in sending update to server. ERR: %s" % e)
 
 
 # # ISD * X is the amount of time the process can be dead for before notifying a finished process.
 def main(host_and_port, loop_token, inter_sample_delay, cooldown_timer):
-    res = processes_by_cpu()
+    procs = processes_by_cpu()
     for i in range(20):
-        print("%s: %s" % (i, res[i]['name']))
+        print("%s: %s" % (i, procs[i]['name']))
     test_text = input("Type the process # to target and press Enter:\n")
     test_number = int(test_text)
-    target_process_name = res[test_number]['name']
+    target_process_name = procs[test_number]['name']
     print('Tracking process: %s' % target_process_name)
-    process_missing_counter = 0
     try:
         while True:
             outcome = post_process_progress(target_process_name, host_and_port, loop_token)
@@ -101,6 +99,7 @@ def main(host_and_port, loop_token, inter_sample_delay, cooldown_timer):
         print("Ended Tracking")
         os.system('afplay /System/Library/Sounds/Glass.aiff')
         # TODO print("sending end tracking POST note to server")
+
 
 if __name__ == "__main__":
     main(host_and_port=sys.argv[1], loop_token=sys.argv[2], inter_sample_delay=30, cooldown_timer=3)
