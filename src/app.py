@@ -109,7 +109,7 @@ def get_contactinfo_endpoint():
 @app.route('/get_predicates/', methods=['GET'])
 def get_predicates_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
-    predicates = get_predicates(token)
+    predicates = get_predicates(token,DATAFOLDERPATH)
     return Response(
         list_of_predicate_to_json(predicates),
         status=200)
