@@ -27,22 +27,10 @@
       document.write(`<img href="${window.location.href}"><img width="100" src = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${window.location.href}"/></a>`)
        </script>
 
-    <br>
     <h2>cURL Snippet</h2>
-
-    <!--    CURL COMMAND    -->
-    <script type="text/javascript" >
-            // var url = new URL(window.location);
-            // var token = url.searchParams.get("token");
-        document.write(`<pre>curl --location --request POST '${window.location.protocol}//${window.location.host}/update_obs/?token=${token}&obs=0.22'</pre>`)
-    </script>
-
+    <pre id="curl_obs_code_snippet"></pre>
     <h2>Python Snippet</h2>
-
-        <!--    PY COMMAND    -->
-    <script type="text/javascript">
-        document.write(`<pre>import requests;print(requests.request("POST","${window.location.protocol}//${window.location.host}/update_obs/?token=${token}&obs=%s"%val, headers={}, data = {}).text.encode('utf8'))</pre>`)
-    </script>
+    <pre id="python_obs_code_snippet"></pre>
 
         <p>
     <h6>Manually add cpu observations</h6>
@@ -71,6 +59,9 @@
     <a href="https://curl.trillworks.com/">
         Generate snippets for Ansible URI, MATLAB, Node.js, R, PHP, Strest, Go, Dart, JSON, Elixir, or Rust
     </a>
+    <a href="https://gist.github.com/bc/766fb0c70e229b4018caf7c6cbc133e3">Right click to download CPU monitor script</a>
+    <h3>Code to track CPU usage</h3>
+    <pre id="bash_cpu_code_snippet"></pre>
 </p>
 
 
