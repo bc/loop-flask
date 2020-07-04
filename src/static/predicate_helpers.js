@@ -82,7 +82,13 @@ function post_set_predicate(predicate_sentence, button_id, predicate_raw_id) {
 
 function gen_and_send_predicate(form_id, button_id, predicate_raw_id) {
     const form_elements = get_form_elements(form_id)
-    post_set_predicate(predicate_form_into_statement(form_elements), button_id, predicate_raw_id)
+    const statement = predicate_form_into_statement(form_elements);
+    if (statement == ""){
+        return;
+    } else{
+
+    post_set_predicate(statement, button_id, predicate_raw_id)
+    }
 }
 
 function post_contactinfo(cell_number, document_id_for_status) {

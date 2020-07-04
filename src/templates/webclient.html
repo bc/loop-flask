@@ -107,7 +107,10 @@ CPU (where 0.2 means 20% CPU activity)
 
         <input type="number" id="predicate_form_obs_val" name="predicate_form_obs_val" min="0.0" max="1.0" value="0.9" step="0.1">
 </form>
-<a></a><button id="predicate_set_button" onclick="gen_and_send_predicate('set_predicates', 'predicate_set_button','predicate_raw')">Set</button></form>
+<a><button id="predicate_set_button" onclick="gen_and_send_predicate('set_predicates', 'predicate_set_button','predicate_raw')">Set</button></a>
+<h6>Ping is armed when both are green. To re-arm the predicate, press Set above</h6>
+<pre id="predicate_check_serverside">Serverside Predicate Status</pre>
+<pre id="contactinfo_check_serverside">Serverside Contactinfo Status</pre>
 <pre id="predicate_raw"></pre>
 
 </body>

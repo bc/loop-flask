@@ -147,8 +147,12 @@ var myToken = getQueryVariable("token")
 if (!myToken) {
     alert("Retry after adding ?token=X at the end with your URL request. Replace X with your token.")
 } else {
-    window.setInterval(() => GET_data(myToken), 1000);
-    console.log("invoked");
+    window.setInterval(function() {
+            GET_data(myToken);
+            get_predicate_from_server("predicate_check_serverside");
+            get_contactinfo_from_server('contactinfo_check_serverside');
+        }
+    ,500)
 }
 
 
@@ -162,4 +166,52 @@ fetch(`${window.location.protocol}//${window.location.host}/set_contactinfo/?tok
   .then(response => response.text())
   .then(result => console.log(result))
   .catch(error => console.log('error', error));
+}
+
+
+function get_predicate_from_server(status_icon_id){
+    var requestOptions = {
+  method: 'GET',
+  redirect: 'follow'
+};
+var target_element = document.getElementById(status_icon_id);
+fetch(`/get_predicates/?token=${get_token_from_param()}`, requestOptions)
+  .then(response => response.text())
+  .then(function(result){
+      if (result == "[]"){
+          target_element.style = "background-color: grey;";
+          target_element.innerText = "No active predicates enabled";
+      } else {
+          target_element.style = "background-color: green";
+          target_element.innerText = `Predicate enabled: ${result}`;
+      }
+  })
+  .catch(error => console.log('error', error));
+}
+
+function get_contactinfo_from_server(status_icon_id) {
+    var response_status;
+    var requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+    };
+    var target_element = document.getElementById(status_icon_id);
+
+    fetch(`/get_contactinfo/?token=${get_token_from_param()}`, requestOptions)
+        .then(function(response){
+            response_status = response.status;
+        return response.text()})
+        .then(function(result){
+      if (response_status == 401){
+          target_element.style = "background-color: grey;";
+          target_element.innerText = "Missing contact info";
+      } else if (response_status == 200){
+          target_element.style = "background-color: green";
+          target_element.innerText = `Contact Info Enabled: ${result}`;
+      } else{
+          target_element.style = "background-color: black";
+          target_element.innerText = `Unknown response err for contact info`;
+      }
+  })
+        .catch(error => console.log('error', error));
 }
