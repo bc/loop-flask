@@ -152,7 +152,7 @@ if (!myToken) {
             get_predicate_from_server("predicate_check_serverside");
             get_contactinfo_from_server('contactinfo_check_serverside');
         }
-    ,200)
+    ,150)
 }
 
 
