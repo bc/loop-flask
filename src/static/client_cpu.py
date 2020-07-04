@@ -90,7 +90,7 @@ def main(host_and_port, loop_token, inter_sample_delay, cooldown_timer):
                 if cooldown_timer == 0:
                     print("process definitely died")
                     os.system('afplay /System/Library/Sounds/Glass.aiff')
-                    break
+                    return
                     # TODO post_process_at_neg1(target_process_name,host_and_port,loop_token)
                 # if the process still has 'lives' left
                 cooldown_timer -= 1
@@ -99,6 +99,7 @@ def main(host_and_port, loop_token, inter_sample_delay, cooldown_timer):
         print("Ended Tracking")
         os.system('afplay /System/Library/Sounds/Glass.aiff')
         # TODO print("sending end tracking POST note to server")
+        return
 
 
 if __name__ == "__main__":

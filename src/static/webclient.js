@@ -217,6 +217,6 @@ function get_contactinfo_from_server(status_icon_id) {
 }
 
 //Generate Code Snippets
-document.getElementById("bash_cpu_code_snippet").innerText = `curl https://gist.githubusercontent.com/bc/766fb0c70e229b4018caf7c6cbc133e3/raw/552d3a8205e5cb5b2ab5eb4b9b28c1e7168ecb0d/client_cpu.py >> /tmp/cpu_runner.py && python3 /tmp/cpu_runner.py ${window.location.protocol}//${window.location.host} ${get_token_from_param()}`
+document.getElementById("bash_cpu_code_snippet").innerText = `curl https://gist.githubusercontent.com/bc/766fb0c70e229b4018caf7c6cbc133e3/raw/4af40d418b1ca641e12b2e16ff57fe4fc9df83d4/client_cpu.py >> /tmp/cpu_runner.py && python3 /tmp/cpu_runner.py ${window.location.protocol}//${window.location.host} ${get_token_from_param()}`
 document.getElementById("python_obs_code_snippet").innerText = `import requests;print(requests.request("POST","${window.location.protocol}//${window.location.host}/update_obs/?token=${token}&obs=%s"%val, headers={}, data = {}).text.encode('utf8'))`
 document.getElementById("curl_obs_code_snippet").innerText = `curl --location --request POST '${window.location.protocol}//${window.location.host}/update_obs/?token=${token}&obs=0.22'`
