@@ -2,9 +2,9 @@ import psutil
 import time
 import json
 import requests
-
-loop_token = input("paste your token e.g. 49dad6a9-bc0d-413c-9e9c-675da85ff3h2")
-host_and_port = input("paste your host and port e.g. http://142.93.117.219:5000")
+print('Note: Your process needs to be running before you run this')
+loop_token = input("paste your token e.g. 49dad6a9-bc0d-413c-9e9c-675da85ff3h2\n")
+host_and_port = input("paste your host and port e.g. 142.93.117.219:5000\n")
 # host_and_port = "http://142.93.117.219:5000"
 inter_sample_delay = 30 #
 
@@ -26,7 +26,7 @@ def processes_by_cpu():
 
 # returns None if there's an error.
 def process_name_on_blacklist(input_process_name):
-    blacklist = ["Google Chrome", "routined", "remindd", "Spotify", "firefox", "Activity Monitor",
+    blacklist = ["routined", "remindd", "Spotify", "Activity Monitor",
                  "Google Drive File Stream"]
     blacklist = []
     no_hits = sum([input_process_name.lower() in x.lower() for x in blacklist]) != 0
@@ -68,21 +68,19 @@ def post_process_progress(target_process_name, host_socket, token):
         # TODO warn if token is wrong
     except Exception as e:
         # soft err
-        print("Couldn't send this observation to the server. Confirm you're connected to the internet! ERR: %s" % e)
+        print("Couldn't send this observation to the server. Confirm you're connected to the internet, and that the token is correct! ERR: %s" % e)
 
 
 res = processes_by_cpu()
 
-print('Note: Your process needs to be running before you run this')
+
 for i in range(20):
     print("%s: %s" % (i, res[i]['name']))
-test_text = input("Type the process # to target and press enter:")
+test_text = input("Type the process # to target and press Enter:\n")
 test_number = int(test_text)
 target_process_name = res[test_number]['name']
 print('Tracking process: %s' % target_process_name)
 process_missing_counter = 0
-
-
 
 
 try:
