@@ -40,26 +40,31 @@ def process_name_on_blacklist(input_process_name):
 def extract_process_info(proc):
     try:
         pinfo = proc.as_dict(attrs=['pid', 'name', 'username'])
-        if process_name_on_blacklist(pinfo["name"]):
+        # if its a known non-process, or it's the root process, ignore.
+        if process_name_on_blacklist(pinfo["name"]) or pinfo["pid"]==0:
             return None
         pinfo['vms_bytes'] = proc.memory_info().vms / (1024 * 1024)
         pinfo['rss_bytes'] = proc.memory_info().rss
         pinfo['cpu'] = proc.cpu_percent(interval=None) / 100.0  # convert to fraction
         return pinfo
     except Exception as e:
-        print("Had exception when extracting process info: " % e)
+        if type(e) == psutil.AccessDenied:
+            return None
+        print("Had exception when extracting process info: " % json.dumps(e))
         return None
 
-
-def post_process_progress(target_process_name, host_socket, token):
+def post_process_progress(target_process, host_socket, token):
     assert host_socket.endswith("/") is not True
-    only_target_name = list(filter(lambda x: x["name"] == target_process_name, processes_by_cpu()))
+    only_target_name = list(filter(lambda x: x["pid"] == target_process[1], processes_by_cpu()))
+    url: str = "%s/update_cpu/?token=%s" % (host_socket, token)
     if len(only_target_name) == 0:
-        print("%s process not found! Maybe it's done" % target_process_name)
+        print("%s process (ID %s) not found! It's likely done" % target_process)
+        payload = json.dumps({"name": target_process[0],"pid":target_process[1], "cpu": 0.0000000})
+        response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload)
+        print(response.json)
         # TODO send null result
         return "process_not_found"
     payload: str = json.dumps(only_target_name[0])
-    url: str = "%s/update_cpu/?token=%s" % (host_socket, token)
     try:
         response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload)
         print("%s\n" % payload + str(response.text))
@@ -77,10 +82,10 @@ def main(host_and_port, loop_token, inter_sample_delay, cooldown_timer):
         print("%s: %s" % (i, procs[i]['name']))
     test_text = input("Type the process # to target and press Enter:\n")
     test_number = int(test_text)
-    target_process_name = procs[test_number]['name']
-    print('Tracking process: %s' % target_process_name)
+    target_process = (procs[test_number]['name'], procs[test_number]['pid'])
+    print('Tracking process: %s, ID: %s' % target_process)
     while True:
-        outcome = post_process_progress(target_process_name, host_and_port, loop_token)
+        outcome = post_process_progress(target_process, host_and_port, loop_token)
         if outcome == "process_not_found":
             print('Process has been missing. %s lives left' % cooldown_timer)
             if cooldown_timer == 0:
@@ -99,4 +104,5 @@ def main(host_and_port, loop_token, inter_sample_delay, cooldown_timer):
 
 
 if __name__ == "__main__":
-    main(host_and_port=sys.argv[1], loop_token=sys.argv[2], inter_sample_delay=30, cooldown_timer=3)
+    main("http://142.93.117.219:5000", "834e0074-ee6d-4111-9d8b-3118af1aef4f", 1, 0)
+    # main(host_and_port=sys.argv[1], loop_token=sys.argv[2], inter_sample_delay=30, cooldown_timer=3)
