@@ -104,5 +104,4 @@ def main(host_and_port, loop_token, inter_sample_delay, cooldown_timer):
 
 
 if __name__ == "__main__":
-    main("http://142.93.117.219:5000", "834e0074-ee6d-4111-9d8b-3118af1aef4f", 1, 0)
-    # main(host_and_port=sys.argv[1], loop_token=sys.argv[2], inter_sample_delay=30, cooldown_timer=3)
+    main(host_and_port=sys.argv[1], loop_token=sys.argv[2], inter_sample_delay=10, cooldown_timer=0)
