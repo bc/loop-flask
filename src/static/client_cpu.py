@@ -1,10 +1,10 @@
 # Generate a token here: 142.93.117.219:5000/
 import os
 
-print("Installing\n _psutil_ to examine CPU processes and _requests_ to handle networking")
-res = os.system("pip3 install psutil requests")
+print("Installing")
+res = os.system("pip3 -q install psutil requests")
 print(res)
-print('Installation complete')
+print('Installation Complete')
 
 import psutil
 import requests
