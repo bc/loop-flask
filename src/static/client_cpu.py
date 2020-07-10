@@ -2,7 +2,7 @@
 import os
 
 print("Installing")
-res = os.system("pip -q install psutil requests")
+res = os.system("pip3 -q install psutil requests")
 print(res)
 print('Installation Complete')
 
