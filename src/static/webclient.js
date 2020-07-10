@@ -219,6 +219,6 @@ function get_contactinfo_from_server(status_icon_id) {
 //Generate Code Snippets
 const client_cpu_link = `${window.location.protocol}//${window.location.host}/static/client_cpu.py`
 const myrand = Math.random().toString();
-document.getElementById("bash_cpu_code_snippet").innerText = `curl -L -H 'Cache-Control: no-cache' ${client_cpu_link} > /tmp/cpu_runner_${myrand}.py && python /tmp/cpu_runner_${myrand}.py ${window.location.protocol}//${window.location.host} ${get_token_from_param()}`
+document.getElementById("bash_cpu_code_snippet").innerText = `curl -L -H 'Cache-Control: no-cache' ${client_cpu_link} > /tmp/cpu_runner_${myrand}.py && python3 /tmp/cpu_runner_${myrand}.py ${window.location.protocol}//${window.location.host} ${get_token_from_param()}`
 document.getElementById("python_obs_code_snippet").innerText = `import requests;print(requests.request("POST","${window.location.protocol}//${window.location.host}/update_obs/?token=${token}&obs=%s"%val, headers={}, data = {}).text.encode('utf8'))`
 document.getElementById("curl_obs_code_snippet").innerText = `curl --location --request POST '${window.location.protocol}//${window.location.host}/update_obs/?token=${token}&obs=0.22'`
