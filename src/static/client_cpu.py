@@ -48,7 +48,7 @@ def extract_process_info(proc):
         pinfo['cpu'] = proc.cpu_percent(interval=None) / 100.0  # convert to fraction
         return pinfo
     except Exception as e:
-        if type(e) == psutil.AccessDenied:
+        if type(e) == psutil.AccessDenied or type(e) == psutil.ZombieProcess:
             return None
         print("Had exception when extracting process info: " % json.dumps(e))
         return None

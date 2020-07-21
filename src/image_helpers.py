@@ -34,39 +34,32 @@ def cluster_prediction(cluster, input):
     cluster_idx_for_val = distances.index(min(distances))
     return cluster_idx_for_val
 
-def img_and_end_px_to_progress( endzone_coord,img_input, debug=False):
-    endzone_x = endzone_coord[0]
-    progressbar_y = endzone_coord[1]
+def img_and_end_px_to_progress(progress_coordinates, img_input, debug=False):
     im = img_input.convert("L")
     xx = pilToNumpy(im).astype(np.float32)
-    target_row = xx[progressbar_y][0:endzone_x + 1]
+    target_row = xx[progress_coordinates["left"].y][progress_coordinates["left"].x:progress_coordinates["right"].x]
     draw = ImageDraw.Draw(im)
-    draw.line((0, progressbar_y) + (im.size[0], progressbar_y), fill=128)
+    draw.line((0, progress_coordinates["left"].y) + (im.size[0], progress_coordinates["left"].y), fill=128)
 
-    endzone_pixel_col = xx[progressbar_y, endzone_x]
+    endzone_pixel_col = xx[progress_coordinates["right"].x, progress_coordinates["right"].y]
     print("Crosshair col: %s" % endzone_pixel_col)
-    assert abs(max(target_row) - min(target_row)) > 30
-    clusters = kmeans(target_row, 3)
-    distances = [abs(endzone_pixel_col - x) for x in clusters[0]]
-    cluster_idx_for_endzone = distances.index(min(distances))
-    preds = [cluster_prediction(clusters, x) for x in target_row]
-    non_endzone_preds = [x for x in preds if x != cluster_idx_for_endzone]
-    progress_so_far_cluster_idx = non_endzone_preds[-1]
-    val_associated_with_progress = clusters[0][progress_so_far_cluster_idx]
-    start_pixel = len([x for x in preds if x not in [cluster_idx_for_endzone, progress_so_far_cluster_idx]])
-    progress_pixel = len(non_endzone_preds)
-    marked_points = [start_pixel, progress_pixel, endzone_x]
+    # assert abs(max(target_row) - min(target_row)) > 30
+    # clusters = kmeans(target_row, 3)
+    # distances = [abs(endzone_pixel_col - x) for x in clusters[0]]
+    # cluster_idx_for_endzone = distances.index(min(distances))
+    # preds = [cluster_prediction(clusters, x) for x in target_row]
+    # non_endzone_preds = [x for x in preds if x != cluster_idx_for_endzone]
+    # progress_so_far_cluster_idx = non_endzone_preds[-1]
+    # val_associated_with_progress = clusters[0][progress_so_far_cluster_idx]
+    start_pixel = progress_coordinates["left"].x
+    progress_pixel = progress_coordinates["progress"].x
+    marked_points = [progress_coordinates["left"].x, progress_coordinates["progress"].x, progress_coordinates["right"].x]
     # finish line
     draw.line((start_pixel, 0) + (start_pixel, im.size[1]), fill=128)
-    draw.line((start_pixel-1, 0) + (start_pixel-1, im.size[1]), fill=255)
-    draw.line((progress_pixel, 0) + (progress_pixel, im.size[1]), fill=128)
-    draw.line((progress_pixel-1, 0) + (progress_pixel-1, im.size[1]), fill=255)
-    draw.line((endzone_x, 0) + (endzone_x, im.size[1]), fill=128)
-    draw.line((endzone_x-1, 0) + (endzone_x-1, im.size[1]), fill=255)
     im.show()
 
     cropped_pbar = im.crop(
-        (start_pixel, progressbar_y - 20, endzone_x, progressbar_y + 20))
+        (progress_coordinates["left"].x, progress_coordinates["left"].y - 20, progress_coordinates["right"].x, progress_coordinates["left"].y + 20))
     cropped_pbar.show()
     tared_points = [x - min(marked_points) for x in marked_points]
     normalized_points = [x / max(tared_points) for x in tared_points]

@@ -33,9 +33,6 @@ def get_last_observation_line(filepath, valType="OBS"):
         return v
 
 
-
-
-
 def compose_CPU(name, value):
     return "CPU,%s,%s,%s\n" % (time.time(), name, value)
 

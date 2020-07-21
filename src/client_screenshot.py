@@ -1,27 +1,32 @@
 import os
 import requests
 from time import sleep
-
+import pyautogui
 import requests
 
 from image_helpers import *
 # open colour image
 from PIL import ImageGrab
 
-row_pixel_target = 591
-count = 1
-from scipy.cluster.vq import kmeans
-sleep(3)
-RR = os.popen("screencapture /tmp/test.png")
-sleep(1)
-Image.open("/tmp/test.png").show()
+def announce_mouse_coord_request(additional_thing_to_say):
+    os.system("say %s 3"%additional_thing_to_say)
+    sleep(0.2)
+    os.system("say 2")
+    sleep(0.2)
+    os.system("say 1")
+    sleep(0.2)
+    coord = pyautogui.position()
+    print("%s\n("%additional_thing_to_say + str(coord.x) + "," + str(coord.y) + ")")
+    return(coord)
 
-x = int(input("Enter X: "))
-y = int(input("Enter Y: "))
-coord = (x,y)
-sleep(2)
-RR = os.popen("screencapture /tmp/test.png")
-tempVal = img_and_end_px_to_progress(coord,Image.open("/tmp/test.png"), debug=True)
+progress_coordinates = {}
+progress_coordinates["left"] = announce_mouse_coord_request("zero percent")
+progress_coordinates["progress"] = announce_mouse_coord_request("current progress")
+progress_coordinates["right"] = announce_mouse_coord_request("100 percent")
+os.system("rm /Users/briancohn/Desktop/test.png &")
+RR = os.popen("screencapture /Users/briancohn/Desktop/test.png")
+sleep(1)
+tempVal = img_and_end_px_to_progress(progress_coordinates, Image.open("/Users/briancohn/Desktop/test.png"), debug=True)
 
 
 def post_image(target_filepath):
@@ -45,7 +50,7 @@ input("It thinks the current percentage is %s Press Enter if the image line look
 while True:
     #-R20,20,640,380
     target_filepath = "/Users/briancohn/Desktop/output/s_%s.png"%count
-    x = os.popen("screencapture -x %s"%target_filepath)
+    x = os.popen("screencapture -x %s" % target_filepath)
     val = img_and_end_px_to_progress(
         coord,
         Image.open(target_filepath),
