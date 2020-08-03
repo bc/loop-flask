@@ -226,4 +226,15 @@ document.getElementById("curl_obs_code_snippet").innerText = curl_command_obs
 document.getElementById("matlab_obs_code_snippet").innerText = `system("${curl_command_obs} &");`
 document.getElementById("python_obs_code_snippet").innerText = `import requests;print(requests.request("POST","${window.location.protocol}//${window.location.host}/update_obs/?token=${token}&obs=%s"%val, headers={}, data = {}).text.encode('utf8'))`
 
-var ctx = document.getElementById('myChart').getContext('2d');
+// var ctx = document.getElementById('myChart').getContext('2d');
+// var myLineChart = new Chart(ctx, {
+//     type: 'line',
+//     data: [{
+//     x: 10,
+//     y: 20
+// }, {
+//     x: 15,
+//     y: 10
+// }],
+//     options:
+// });

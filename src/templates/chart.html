@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Line Chart Multiple Axes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"
+            integrity="sha512-s+xg36jbIujB2S2VKfpGmlC3T5V2TF3lY48DX7u2r9XzGzgPsa6wTpOQA7J9iffvdeBN0q9tKzRxVxw1JviZPg=="
+            crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <script src="../static/utils.js"></script>
+</head>
+
+
+<body>
+<div style="width:75%;">
+    <canvas id="canvas"></canvas>
+</div>
+
+<script>
+    var lineChartData = {
+        datasets: [{
+            label: 'Progress',
+            borderColor: window.chartColors.red,
+            backgroundColor: window.chartColors.red,
+            fill: false,
+            data: [{
+                x: new Date( Date.now() - 200 * 60 ),
+                y: 20
+            }, {
+                x: new Date( Date.now() - 700 * 60 ),
+                y: 10
+            }],
+            yAxisID: 'y-axis-1',
+        }, {
+            label: 'Process CPU',
+            borderColor: window.chartColors.blue,
+            backgroundColor: window.chartColors.blue,
+            fill: false,
+            data: [{
+                x: new Date( Date.now() - 1000 * 60 ),
+                y: 1000
+            }, {
+                x: new Date( Date.now() - 500 * 60 ),
+                y: 1002
+            }],
+            yAxisID: 'y-axis-2'
+        }]
+    };
+
+    window.onload = function () {
+        var ctx = document.getElementById('canvas').getContext('2d');
+        window.myLine = Chart.Line(ctx, {
+            data: lineChartData,
+            options: {
+                responsive: true,
+                hoverMode: 'index',
+                stacked: false,
+                title: {
+                    display: true,
+                    text: 'Observations'
+                },
+                scales: {
+                	xAxes: [{type:'linear', display: true, position: 'bottom', id: 'x-axis-1'}],
+                    yAxes: [{
+                        type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                        display: true,
+                        position: 'left',
+                        id: 'y-axis-1',
+                    }, {
+                        type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                        display: true,
+                        position: 'right',
+                        id: 'y-axis-2',
+
+                        // grid line settings
+                        gridLines: {
+                            drawOnChartArea: false, // only want the grid lines for one axis to show up
+                        },
+                    }],
+                }
+            }
+        });
+    };
+</script>
+</body>
+
+</html>
