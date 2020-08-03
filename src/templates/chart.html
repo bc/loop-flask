@@ -3,10 +3,9 @@
 
 <head>
     <title>Line Chart Multiple Axes</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"
-            integrity="sha512-s+xg36jbIujB2S2VKfpGmlC3T5V2TF3lY48DX7u2r9XzGzgPsa6wTpOQA7J9iffvdeBN0q9tKzRxVxw1JviZPg=="
-            crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@0.1.1"></script>
     <script src="../static/utils.js"></script>
 </head>
 
@@ -24,10 +23,10 @@
             backgroundColor: window.chartColors.red,
             fill: false,
             data: [{
-                x: new Date( Date.now() - 200 * 60 ),
+                x: new Date(Date.now() - 1000 * 60),
                 y: 20
             }, {
-                x: new Date( Date.now() - 700 * 60 ),
+                x: new Date(Date.now() - 500 * 60),
                 y: 10
             }],
             yAxisID: 'y-axis-1',
@@ -37,10 +36,10 @@
             backgroundColor: window.chartColors.blue,
             fill: false,
             data: [{
-                x: new Date( Date.now() - 1000 * 60 ),
+                x: new Date(Date.now() - 1000 * 60),
                 y: 1000
             }, {
-                x: new Date( Date.now() - 500 * 60 ),
+                x: new Date(Date.now() - 300 * 60),
                 y: 1002
             }],
             yAxisID: 'y-axis-2'
@@ -60,7 +59,17 @@
                     text: 'Observations'
                 },
                 scales: {
-                	xAxes: [{type:'linear', display: true, position: 'bottom', id: 'x-axis-1'}],
+                    xAxes: [{
+                        type: 'time',
+                        ticks: {
+                            source: 'data'
+                        },
+                        time: {
+                            displayFormats: {
+                                second: 'h:mm:ss'
+                            }
+                        }
+                    }],
                     yAxes: [{
                         type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
                         display: true,
