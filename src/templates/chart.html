@@ -73,11 +73,17 @@
                     yAxes: [{
                         type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
                         display: true,
+                        ticks: {
+                            source: 'data'
+                        },
                         position: 'left',
                         id: 'y-axis-1',
                     }, {
                         type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
                         display: true,
+                        ticks: {
+                            source: 'data'
+                        },
                         position: 'right',
                         id: 'y-axis-2',
 
@@ -89,6 +95,23 @@
                 }
             }
         });
+
+        function addData(chart, label, data) {
+            chart.data.labels.push(label);
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.push(data);
+            });
+            chart.update();
+        }
+
+        function removeData(chart) {
+            chart.data.labels.pop();
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.pop();
+            });
+            chart.update();
+        }
+
     };
 </script>
 </body>

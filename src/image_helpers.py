@@ -8,6 +8,7 @@ def pilToNumpy(img):
 
 
 def NumpyToPil(img):
+    # TODO optimize possibly using XYZ package
     return Image.fromarray(img)
 
 
@@ -26,6 +27,7 @@ def get_max_dot(row):
     dot = np.diff(row)
     m = max(dot)
     return [i for i, j in enumerate(dot) if j == m][0]
+
 def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'valid') / w
 
