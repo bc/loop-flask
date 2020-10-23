@@ -174,7 +174,8 @@ def clear_contactinfo(token,DATAFOLDERPATH):
 def get_contactinfo(token, DATAFOLDERPATH):
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
     if not os.path.isfile(target_filepath):
-        abort(401,'no contact info for token')
+        # a cell equal to 0 means they don't have one
+        return CellPhone(0)
     with open(target_filepath, 'r') as f:
         firstline: str = f.readline()
         contactinfo: CellPhone = CellPhone.from_json(firstline)

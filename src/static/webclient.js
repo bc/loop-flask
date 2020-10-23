@@ -237,20 +237,20 @@ function get_contactinfo_from_server(status_icon_id) {
     };
     var target_element = document.getElementById(status_icon_id);
 
-    fetch(`/get_contactinfo/?token=${get_token_from_param()}`, requestOptions)
+    fetch(`/get_contactinfo?token=${get_token_from_param()}`, requestOptions)
         .then(function(response){
             response_status = response.status;
         return response.text()})
         .then(function(result){
-      if (response_status == 401){
-          target_element.style = "background-color: grey;";
+      if (response_status != 200) {
+          return;
+      }
+      if (result == '{"value": 0}'){
+          target_element.style = "background-color: red;";
           target_element.innerText = "Missing contact info";
-      } else if (response_status == 200){
+      } else{
           target_element.style = "background-color: green";
           target_element.innerText = `Contact Info Enabled: ${result}`;
-      } else{
-          target_element.style = "background-color: black";
-          target_element.innerText = `Unknown response err for contact info`;
       }
   })
         .catch(error => console.log('error', error));
@@ -266,15 +266,81 @@ document.getElementById("curl_obs_code_snippet").innerText = curl_command_obs
 document.getElementById("matlab_obs_code_snippet").innerText = `system("${curl_command_obs} &");`
 document.getElementById("python_obs_code_snippet").innerText = `import requests;print(requests.request("POST","${window.location.protocol}//${window.location.host}/update_obs/?token=${token}&obs=%s"%val, headers={}, data = {}).text.encode('utf8'))`
 
-// var ctx = document.getElementById('myChart').getContext('2d');
-// var myLineChart = new Chart(ctx, {
-//     type: 'line',
-//     data: [{
-//     x: 10,
-//     y: 20
-// }, {
-//     x: 15,
-//     y: 10
-// }],
-//     options:
-// });
+var mychart_canvas = document.getElementById('myChart')
+
+function plotData(arrX, arrY, Canvas){
+    var ctx = Canvas.getContext('2d'), cW= Canvas.offsetWidth, cH= Canvas.offsetHeight
+	ctx.setTransform(1, 0, 0, 1, 0, 0)
+    ctx.fillStyle="rgb(255,243,240)"
+    ctx.fillRect(0,0,cW,cH)
+
+    ctx.strokeStyle='black'
+    ctx.beginPath()
+	ctx.moveTo(0.1*cW, 0.05*cH)
+	ctx.lineTo(0.08*cW, 0.08*cH)
+	ctx.moveTo(0.1*cW, 0.05*cH)
+	ctx.lineTo(0.12*cW, 0.08*cH)
+	ctx.moveTo(0.1*cW, 0.05*cH)
+	ctx.lineTo(0.1*cW, 0.9*cH)
+	ctx.lineTo(0.95*cW, 0.9*cH)
+	ctx.lineTo(0.92*cW, 0.88*cH)
+	ctx.moveTo(0.95*cW, 0.9*cH)
+	ctx.lineTo(0.92*cW, 0.92*cH)
+    ctx.stroke()
+    ctx.translate(0.1*cW, 0.9*cH)
+    ctx.scale(1,-1)
+    ctx.stroke()
+
+    var minX= Math.min.apply(null, arrX), minY= Math.min.apply(null, arrY)
+    var maxX= Math.max.apply(null, arrX), maxY= Math.max.apply(null, arrY)
+    var wX=maxX-minX, wY=maxY-minY
+    var gW=0.95*cW-0.1*cW, gH=0.9*cH-0.05*cH
+    var facX=gW/wX, facY=gH/wY
+
+    ctx.beginPath()
+    ctx.fillStyle='blue'
+    ctx.strokeStyle='black'
+    ctx.lineWidth= 0.002*(cW+cH)
+	var sqW=0.02*cW, sqH=0.02*cH
+	var newX, newY
+	for (var i in arrX){
+		newX= (arrX[i]-minX)*facX
+		newY= (arrY[i]-minY)*facY
+    	ctx.fillRect(newX-sqW/2, newY-sqH/2, sqW, sqH)
+    	if (i==0)
+    		ctx.moveTo(newX,newY)
+    	else
+    		ctx.lineTo(newX,newY)
+    }
+    ctx.stroke()
+
+	ctx.scale(1,-1)
+    ctx.fillStyle='darkblue'
+ 	ctx.textBaseline= 'middle'
+	ctx.textAlign= 'center'
+	var fntSize=0.02*(cW+cH)
+   	ctx.font= fntSize+"pt serif"
+   	var txtB= '('+minX+','+minY+')'
+   	var txtBW=ctx.measureText(txtB).width
+   	if (txtBW>0.1*cW) txtBW=0.1*cW
+    ctx.fillText(txtB, -txtBW/2, 0.05*gH, txtBW)
+    ctx.beginPath()
+    for (i=1;i<=5;i++){
+    	ctx.moveTo(i*gW/6, 0.02*cH)
+    	ctx.lineTo(i*gW/6, -0.02*cH)
+	   	txtB= Math.round((i/6*wX+minX)*100)/100
+	   	txtBW=ctx.measureText(txtB).width
+	   	if (txtBW>0.06*cW) txtBW=0.06*cW
+	    ctx.fillText(txtB, i*gW/6, 0.06*cH, txtBW)
+
+    	ctx.moveTo(0.02*cW, -i*gH/6)
+    	ctx.lineTo(-0.02*cW, -i*gH/6)
+	   	txtB= Math.round((i/6*wY+minY)*100)/100
+	   	txtBW= ctx.measureText(txtB).width
+	   	if (txtBW>0.06*cW) txtBW=0.06*cW
+	    ctx.fillText(txtB, -0.06*cW, -i*gH/6, txtBW)
+    }
+    ctx.strokeStyle='purple'
+    ctx.stroke()
+
+}

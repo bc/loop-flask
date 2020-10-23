@@ -103,8 +103,9 @@ def clear_contactinfo_endpoint():
 @app.route('/get_contactinfo/', methods=['GET'])
 def get_contactinfo_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
-    return CellPhone.to_json(get_contactinfo(token, DATAFOLDERPATH))
-
+    contact_info = CellPhone.to_json(get_contactinfo(token, DATAFOLDERPATH))
+    print(contact_info)
+    return contact_info
 
 @app.route('/get_predicates/', methods=['GET'])
 def get_predicates_endpoint():

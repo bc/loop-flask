@@ -1,4 +1,4 @@
-#!/Users/briancohn/Documents/GitHub/bc/loop-backend/src/myenv/bin/python
+#!/Users/briancohn/Documents/GitHub/bc/loop-flask/src/myenv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
