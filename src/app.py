@@ -44,7 +44,7 @@ def listen():
     token = validate_token(request, DATAFOLDERPATH)
     target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
 
-    my_obs = get_last_observation_line(target_filepath, "OBS")
+    obs_type, time, obs = get_last_observation_line(target_filepath, "OBS")
     cpu_type, cpu_time, cpu_name, cpu_obs = get_last_observation_line(target_filepath, "CPU")
 
     payload = {"OBS": {
@@ -65,7 +65,8 @@ def monotonic_obs_eta():
     token = validate_token(request, DATAFOLDERPATH)
     target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
     bigL = get_all_logged_lines(target_filepath, "OBS")
-
+    if len(bigL) < 2:
+        return Response("too few datapoints to predict",200)
     # note that y is the time and x is the value, because i'm interested in the y value where x == 1 (the intercept)
     y = np.asarray([float(x[1]) for x in bigL])
     x = np.asarray([float(x[2]) for x in bigL])
@@ -78,12 +79,13 @@ def monotonic_obs_eta():
         x_final = x[last_drop:]
         y_final = y[last_drop:]
 
-    lower, p_y, upper, z = lm_with_ci(x_final, y_final)
-    payload = {"OBS": {"values": list(x_final), "unixtimes":list(y_final)}, "predictions": {"unixtime_predicted": list(p_y), "unixtime_upperbound": upper, "unixtime_lowerbound": lower, "m":z[0], "b":z[1]}}
+    values_to_infer = np.linspace(0.0, 1.0, 21)
+    lower, p_y, upper, z = lm_with_ci(x=x_final, y=y_final,p_x = values_to_infer)
+    payload = {"OBS": {"values": list(x_final), "unixtimes":list(y_final)}, "predictions": {"values_to_infer": list(values_to_infer), "unixtime_predicted": list(p_y), "unixtime_upperbound": upper, "unixtime_lowerbound": lower, "m":z[0], "b":z[1]}}
     return jsonify(payload)
 
 
-def lm_with_ci(x, y,  p_x = np.arange(1.0)):
+def lm_with_ci(x, y,  p_x):
     """
     derived from # https://tomholderness.wordpress.com/2013/01/10/confidence_intervals/
     :param x: ndarray of floats/ints

@@ -27,12 +27,13 @@ def base_names(file_list):
 
 
 def get_last_observation_line(filepath, valType="OBS"):
-    return get_all_logged_lines(filepath, valType=valType)[-1]
+    lines = get_all_logged_lines(filepath, valType=valType)
+    return lines[-1]
 
 def get_all_logged_lines(filepath, valType="OBS"):
     with open(filepath, "rb") as f:
         observations = [x.decode("utf-8") for x in f.readlines()]
-        obs_vals = [x for x in observations if x.startswith(valType) if "-1" not in x]
+        obs_vals = [x for x in observations if x.startswith(valType)]
         list_of_pieces = [y.rstrip().split(",") for y in obs_vals]
         return list_of_pieces
 

@@ -80,19 +80,14 @@ function b_handle(d) {
 
         if (new_time - latest_time_in_array  > 0) {
             update_local_model(observation_type, observation, local_data_target=local_data_target);
-            console.log('is novel, added')
-        } else{
-            console.log('not novel')
         }
     }
     function save_into_local_if_novel(observation_type, observation, local_data_target) {
         // base case, append if array is empty
         if (_userdata[observation_type].length == 0) {
             update_local_model(observation_type, observation, local_data_target=local_data_target);
-            console.log('empty. adding')
         } else {
             push_if_it_is_a_new_value(observation_type, observation,local_data_target=local_data_target);
-            console.log('not empty, pursuing novelty')
         }
     }
     var response = JSON.parse(d);
@@ -271,10 +266,36 @@ document.getElementById("matlab_obs_code_snippet").innerText = `system("${curl_c
 document.getElementById("python_obs_code_snippet").innerText = `import requests;print(requests.request("POST","${window.location.protocol}//${window.location.host}/update_obs/?token=${token}&obs=%s"%val, headers={}, data = {}).text.encode('utf8'))`
 
 var mychart_canvas = document.getElementById('myChart')
-// setInterval(function (){
-//     // debugger;
-//     plotData(_userdata.OBS, _userdata.CPU,mychart_canvas)
-// },1000)
+setInterval(function (){
+    // debugger;
+    fetch(`/monotonic_obs_eta/?token=${get_token_from_param()}`, {
+  method: 'GET',
+  redirect: 'follow'
+})
+  .then(response => response.text())
+  .then(result => {
+      console.log(result);
+      if(result == "too few datapoints to predict"){
+          return;
+      } else{
+        _userdata["modeling"] = result;
+      }
+  })
+  .catch(error => console.log('error', error));
+},5000)
+
+
+setInterval(function(){
+    if (_userdata["modeling"] == null){
+        return
+    } else if(_userdata["modeling"]["OBS"] == null){
+        return
+    } else if (_userdata["modeling"]["OBS"]["unixtimes"] == null){
+        return
+    } else if (_userdata["modeling"]["OBS"]["unixtimes"].length > 2){
+        plotData(_userdata["modeling"]["OBS"]["unixtimes"], _userdata["modeling"]["OBS"]["values"], mychart_canvas)
+    }
+}, 500)
 function plotData(arrX, arrY, Canvas){
     var ctx = Canvas.getContext('2d'), cW= Canvas.offsetWidth, cH= Canvas.offsetHeight
 	ctx.setTransform(1, 0, 0, 1, 0, 0)
