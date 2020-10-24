@@ -49,48 +49,55 @@ let _userdata = {
 
 
 function b_handle(d) {
-    function update_local_model(observation_type, observation) {
+    function update_local_model(observation_type, observation, local_data_target) {
         const when = new Date(observation["unixtime"]*1000);
 
         if (observation_type=="CPU"){
             const v = {x: when, y: observation.value, name: observation.name}
             update_CPU_view(v);
-            _userdata[observation_type].push(v);
+            local_data_target[observation_type].push(v);
         } else if (observation_type=="OBS"){
             const v = {x: when, y: observation.value}
             update_OBS_view(v)
-            var priorlen = _userdata["OBS"].length
-            _userdata[observation_type].push(v);
-            console.log(`length on ${observation_type} was ${priorlen} but now it is ${_userdata["OBS"].length}`)
+            var priorlen = local_data_target["OBS"].length
+            local_data_target[observation_type].push(v);
+            console.log(`length on ${observation_type} was ${priorlen} but now it is ${local_data_target["OBS"].length}`)
         } else{
             throw Error("unacceptable input observation type")
         }
         try {
-        console.log(`OBSlen:${_userdata.OBS.length}\nCPUlen:${_userdata.CPU.length}`)
+        console.log(`OBSlen:${local_data_target.OBS.length}\nCPUlen:${local_data_target.CPU.length}`)
         } catch (e) {
             debugger;
         }
 
     }
 
-    var response = JSON.parse(d);
 
-    function push_if_it_is_a_new_value(observation_type, observation) {
+    function push_if_it_is_a_new_value(observation_type, observation,local_data_target) {
         const new_time = new Date(observation["unixtime"] * 1000)
-        const is_newer = _userdata[observation_type][_userdata[observation_type].length - 1]["x"] - new_time > 0
-        if (is_newer) {
-            update_local_model(observation_type, observation);
+        const latest_time_in_array = local_data_target[observation_type][local_data_target[observation_type].length - 1]["x"]
+
+        if (new_time - latest_time_in_array  > 0) {
+            update_local_model(observation_type, observation, local_data_target=local_data_target);
+            console.log('is novel, added')
+        } else{
+            console.log('not novel')
         }
     }
-    function save_into_local_if_novel(observation_type, observation) {
+    function save_into_local_if_novel(observation_type, observation, local_data_target) {
+        // base case, append if array is empty
         if (_userdata[observation_type].length == 0) {
-            update_local_model(observation_type, observation);
+            update_local_model(observation_type, observation, local_data_target=local_data_target);
+            console.log('empty. adding')
         } else {
-            push_if_it_is_a_new_value(observation_type, observation);
+            push_if_it_is_a_new_value(observation_type, observation,local_data_target=local_data_target);
+            console.log('not empty, pursuing novelty')
         }
     }
-    save_into_local_if_novel("OBS", response["OBS"]);
-    save_into_local_if_novel("CPU", response["CPU"]);
+    var response = JSON.parse(d);
+    save_into_local_if_novel("OBS", response["OBS"], local_data_target=_userdata);
+    save_into_local_if_novel("CPU", response["CPU"], local_data_target=_userdata);
 }
 function update_observation(input_token, obs_str){
         var requestOptions = {
