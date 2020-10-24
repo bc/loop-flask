@@ -338,7 +338,7 @@ function plotData(arrX, arrY,  predictions,Canvas){
     ctx.stroke()
     const current_unixtime =  Date.now() / 1000
     var minX= Math.min.apply(null, arrX), minY= 0.0
-    var maxX= current_unixtime, maxY= 1.0
+    var maxX= current_unixtime, maxY= 1.15
     var wX=maxX-minX, wY=maxY-minY
     var gW=0.95*cW-0.1*cW, gH=0.9*cH-0.05*cH
     var facX=gW/wX, facY=gH/wY
@@ -383,6 +383,41 @@ function plotData(arrX, arrY,  predictions,Canvas){
     //end linear fit line
 
 
+//
+
+
+        //plot upper and lowerbound
+    ctx.beginPath()
+
+    ctx.lineWidth= 0.002*(cW+cH)
+	var newX, newY
+    //plot datapoints on screen
+    lm_X_u = [...predictions["unixtime_upperbound"]]
+    lm_Y_u = [...predictions["values_to_infer"]]
+
+	//now plot lowerbound
+        lm_X_l = [...predictions["unixtime_lowerbound"]]
+    lm_Y_l = [...predictions["values_to_infer"]]
+
+    x_ci = lm_X_u.concat(lm_X_l.reverse())
+    y_ci = lm_Y_u.concat(lm_Y_l.reverse())
+	for (var i in x_ci){
+		newX= (x_ci[i]-minX)*facX
+		newY= (y_ci[i]-minY)*facY
+    	if (i==0)
+    		ctx.moveTo(newX,newY)
+    	else
+    		ctx.lineTo(newX,newY)
+    }
+    ctx.globalAlpha = 0.15;
+    ctx.closePath();
+	ctx.strokeStyle='green'
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.globalAlpha = 1.0;
+
+
+
 
 
         ctx.strokeStyle='pink'
@@ -399,15 +434,15 @@ function plotData(arrX, arrY,  predictions,Canvas){
    	var txtB= '('+minX+','+minY+')'
    	var txtBW=ctx.measureText(txtB).width
    	if (txtBW>0.1*cW) txtBW=0.1*cW
-    ctx.fillText(txtB, -txtBW/2, 0.05*gH, txtBW)
+    ctx.fillText("Start", -txtBW/2, 0.05*gH, txtBW)
     ctx.beginPath()
     for (i=1;i<=5;i++){
     	ctx.moveTo(i*gW/6, 0.02*cH)
     	ctx.lineTo(i*gW/6, -0.02*cH)
-	   	txtB= Math.round((i/6*wX+minX)*100)/100
+	   	txtB= Math.round(current_unixtime - Math.round((i/6*wX+minX)*100)/100)
 	   	txtBW=ctx.measureText(txtB).width
 	   	if (txtBW>0.06*cW) txtBW=0.06*cW
-	    ctx.fillText(txtB, i*gW/6, 0.06*cH, txtBW)
+	    ctx.fillText("-" + txtB + "s", i*gW/6, 0.06*cH, txtBW)
 
     	ctx.moveTo(0.02*cW, -i*gH/6)
     	ctx.lineTo(-0.02*cW, -i*gH/6)
