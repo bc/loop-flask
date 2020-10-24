@@ -31,8 +31,8 @@ def gen_new_token(datapath: str):
     targetAbspath = os.path.join(datapath, "%s.txt" % new_token)
     user_file = open(targetAbspath, "a")
     now = time.time()
-    L = ["APN:unknown\n", "init:%s\n" % now]
-    user_file.writelines(L)
+    header_lines = ["init:%s\n" % now]
+    user_file.writelines(header_lines)
     user_file.write(compose_OBS(-1))
     user_file.write(compose_CPU("INIT", -1))
     user_file.close()

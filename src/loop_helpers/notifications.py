@@ -35,10 +35,9 @@ def push_telegram_notification(loop_token, message):
     except:
         return False
 
-
 @dataclass_json
 @dataclass
-class CellPhone:
+class DiscordID:
     # phone address is a phone number with the country code in front e.g. 13237775555. no + or - or ()
     value: int
 
@@ -133,7 +132,6 @@ def trigger_on_true_evaluation(trigger_on_true, current_observation, threshold):
         raise Exception("input trigger was invalid. Input was %s; accepted ones are: %s" % (trigger_on_true,",".join(accepted_comparator_operators())))
 
 
-
 def predicate_is_triggered(token, o: Observation, DATAFOLDERPATH):
     predicates = get_predicates(token, DATAFOLDERPATH)
     if len(predicates) == 0:
@@ -153,18 +151,6 @@ def clear_all_predicates(token, DATAFOLDERPATH):
         os.remove(target_filepath)
     print("rm predicates for token %s" % token)
 
-def verify_cellnumber(cell_number):
-    url = "https://lookups.twilio.com/v1/PhoneNumbers/%s?Type=carrier"%str(cell_number)
-    payload = {}
-    headers = {
-        'Authorization': 'Basic QUNjMjEzZjBiNjA5ODZkMTk2ZmExOWQ3ZTZhMWI0ZmExNzpiNGIzZTkxNzgyM2NkODJhNWFiMTNjNDg4NDc4ZmU3NQ=='
-    }
-    response = requests.request("GET", url, headers=headers, data=payload)
-    data_response = json.loads(response.text.encode('utf8'))
-    print(data_response) # Todo some error handling to give a more informative response to js
-    return(data_response["phone_number"])
-
-
 def clear_contactinfo(token,DATAFOLDERPATH):
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
     if os.path.isfile(target_filepath):
@@ -175,23 +161,8 @@ def get_contactinfo(token, DATAFOLDERPATH):
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
     if not os.path.isfile(target_filepath):
         # a cell equal to 0 means they don't have one
-        return CellPhone(0)
+        return DiscordID(0)
     with open(target_filepath, 'r') as f:
         firstline: str = f.readline()
-        contactinfo: CellPhone = CellPhone.from_json(firstline)
+        contactinfo: DiscordID = DiscordID.from_json(firstline)
         return contactinfo
-
-
-def text_update(loop_token: str, msg: str,DATAFOLDERPATH):
-    target_number = get_contactinfo(loop_token, DATAFOLDERPATH)
-    url = "https://api.twilio.com/2010-04-01/Accounts/ACc213f0b60986d196fa19d7e6a1b4fa17/Messages.json"
-
-    payload = 'To=+%s&From=+12052892818&Body=%s' % (target_number.value, msg)
-
-    headers = {
-        'Authorization': 'Basic QUNjMjEzZjBiNjA5ODZkMTk2ZmExOWQ3ZTZhMWI0ZmExNzpiNGIzZTkxNzgyM2NkODJhNWFiMTNjNDg4NDc4ZmU3NQ==',
-        'Content-Type': 'application/x-www-form-urlencoded'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-    return (response.json())

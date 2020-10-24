@@ -91,26 +91,26 @@ function gen_and_send_predicate(form_id, button_id, predicate_raw_id) {
     }
 }
 
-function post_contactinfo(cell_number, document_id_for_status) {
+function post_contactinfo(contact_number, document_id_for_status) {
     var requestOptions = {
         method: 'POST',
         redirect: 'follow'
     };
     const status_object = document.getElementById(document_id_for_status)
     var response_status;
-    cell_number = cell_number.trim();
-    //if they entered nothing
-    if(cell_number == ""){
+    contact_number = contact_number.trim();
+    //if they entered nothing or non numbers, err out
+    if(contact_number == ""){
         alert("You gave a blank phone number");
         status_object.style = "background-color: yellow;"
         return;
         //if it's not a pure number
-    } else if (/^\d+$/.test(cell_number)==false){
+    } else if (/^\d+$/.test(contact_number)==false){
         alert("No symbols please, try again with only digits")
         status_object.style = "background-color: yellow;"
         return;
     }
-    fetch(`/set_contactinfo/?token=${get_token_from_param()}&cell=${cell_number}`, requestOptions)
+    fetch(`/set_contactinfo/?token=${get_token_from_param()}&contact_number=${contact_number}`, requestOptions)
         .then(function(response){
             response_status = response.status;
             if (response_status != 200){

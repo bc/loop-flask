@@ -2,6 +2,7 @@ import logging
 import logging
 import os
 
+import requests
 import sentry_sdk
 from flask import Flask, request, jsonify, abort, Response, render_template, redirect
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -9,9 +10,9 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 from loop_helpers.authentication import validate_token, gen_new_token
 from loop_helpers.datafunctions import get_last_observation_line, try_parse_object_as, compose_CPU, is_normalized, \
     compose_OBS, Observation
-from loop_helpers.notifications import push_telegram_notification, text_update, Predicate, CellPhone, get_contactinfo, \
+from loop_helpers.notifications import push_telegram_notification, Predicate, get_contactinfo, \
     predicate_is_triggered, parse_predicate, list_of_predicate_to_json, get_predicates, clear_all_predicates, \
-    clear_contactinfo, verify_cellnumber
+    clear_contactinfo, DiscordID
 
 app = Flask(__name__)
 DATAFOLDERPATH = "../data"
@@ -79,17 +80,59 @@ def set_predicates():
 @app.route('/set_contactinfo/', methods=['POST', 'GET'])
 def set_contactinfo():
     token: str = validate_token(request, DATAFOLDERPATH)
-    payload: str = request.args.get("cell")
-    cell_int: int = try_parse_object_as(payload, int)
-    better_cell_number = verify_cellnumber(cell_int)
-    cell_no = CellPhone(better_cell_number)
+    payload: str = request.args.get("contact_number")
+    my_id: int = try_parse_object_as(payload, int)
+    val = DiscordID(my_id)
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
     # overwrite prior contact info
     with open(target_filepath, "w") as myfile:
-        newline = CellPhone.to_json(cell_no)
+        newline = DiscordID.to_json(val)
         myfile.writelines(newline)
     return Response(
         "added new contact info:" + newline,
+        status=200)
+
+
+def ping_discorder(discord_id, message):
+    url = "https://ptb.discord.com/api/webhooks/769345876153729045/wWF2vgmF7a4c1TPiRgEjQTF1QPp8s9JogZYLMgM2e7fjKwPX25l00MeGY9P1i2wLwbmq"
+
+    payload = "{\"username\": \"LoopBot\", \"content\": \"%s<@%s>\"}"%(discord_id.value, message)
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    print(response.text.encode('utf8'))
+
+def ping_discord_general(message):
+    url = "https://ptb.discord.com/api/webhooks/769345876153729045/wWF2vgmF7a4c1TPiRgEjQTF1QPp8s9JogZYLMgM2e7fjKwPX25l00MeGY9P1i2wLwbmq"
+
+    payload = "{\"username\": \"LoopBot\", \"content\": \"%s\"}"%(message)
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    return(response)
+
+
+@app.route('/ping_general/', methods=['POST', 'GET'])
+def ping_general():
+    res = ping_discord_general("general_Message")
+    return Response("posted; %s" % res, status=200)
+
+
+@app.route('/set_discord_id/', methods=['POST', 'GET'])
+def set_discord_id():
+    token: str = validate_token(request, DATAFOLDERPATH)
+    discord_id: str = request.args.get("id_no")
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s_discord_id.txt" % token)
+    print('should APN ping with %s'%discord_id)
+    # overwrite prior apn info
+    with open(target_filepath, "w") as myfile:
+        myfile.writelines(discord_id)
+    message="Welcome to the team!"
+    ping_discorder(discord_id, message)
+    return Response(
+        "added new apn info:" + discord_id,
         status=200)
 
 
@@ -103,7 +146,7 @@ def clear_contactinfo_endpoint():
 @app.route('/get_contactinfo/', methods=['GET'])
 def get_contactinfo_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
-    contact_info = CellPhone.to_json(get_contactinfo(token, DATAFOLDERPATH))
+    contact_info = DiscordID.to_json(get_contactinfo(token, DATAFOLDERPATH))
     print(contact_info)
     return contact_info
 
@@ -163,12 +206,9 @@ def update():
 
 def ping_user(obs, token, message_type):
     app.logger.info("Sending %s push notification to user phone" % message_type)
-    twilio_resp = text_update(token, "Loop Says\n%s:%s" % (message_type, obs), DATAFOLDERPATH)
-    print(twilio_resp)
-    if twilio_resp:
-        return "posted; notified"
-    else:
-        return "posted; notification failed"
+    discord_id = get_contactinfo(token, DATAFOLDERPATH)
+    res  = ping_discorder(discord_id,"Loop says:%s,%s" % (message_type,obs))
+    print("discord outcome: " + res)
 
 
 @app.route('/update_screenshot/', methods=['POST'])

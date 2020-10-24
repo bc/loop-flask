@@ -100,7 +100,7 @@ function update_observation(input_token, obs_str){
             method: 'POST',
             redirect: 'follow'
         };
-        console.log(obs_str + "is the str");
+
 var endpt = `/update_obs/?token=${input_token}&obs=${obs_str}`;
     console.log(endpt);
         fetch(endpt, requestOptions)
