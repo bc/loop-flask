@@ -234,7 +234,7 @@ function get_contactinfo_from_server(status_icon_id) {
         redirect: 'follow'
     };
     var target_element = document.getElementById(status_icon_id);
-
+    var contact_info_input = document.getElementById("discord_id_input")
     fetch(`/get_contactinfo?token=${get_token_from_param()}`, requestOptions)
         .then(function(response){
             response_status = response.status;
@@ -248,7 +248,9 @@ function get_contactinfo_from_server(status_icon_id) {
           target_element.innerText = "Missing contact info";
       } else{
           target_element.style = "background-color: green";
-          target_element.innerText = `Contact Info Enabled: ${result}`;
+          var discord_id = JSON.parse(result).value
+          target_element.innerText = `Discord ID is Set: ${discord_id}`;
+          contact_info_input.value = discord_id;
       }
   })
         .catch(error => console.log('error', error));
@@ -431,18 +433,14 @@ function plotData(arrX, arrY,  predictions,Canvas){
 	ctx.textAlign= 'center'
 	var fntSize=8;
    	ctx.font= fntSize+"pt serif"
-   	var txtB= '('+minX+','+minY+')'
-   	var txtBW=ctx.measureText(txtB).width
-   	if (txtBW>0.1*cW) txtBW=0.1*cW
-    ctx.fillText("Start", -txtBW/2, 0.05*gH, txtBW)
+
     ctx.beginPath()
     for (i=1;i<=5;i++){
     	ctx.moveTo(i*gW/6, 0.02*cH)
     	ctx.lineTo(i*gW/6, -0.02*cH)
 	   	txtB= Math.round(current_unixtime - Math.round((i/6*wX+minX)*100)/100)
 	   	txtBW=ctx.measureText(txtB).width
-	   	if (txtBW>0.06*cW) txtBW=0.06*cW
-	    ctx.fillText("-" + txtB + "s", i*gW/6, 0.06*cH, txtBW)
+	    ctx.fillText("-" + txtB + "s", i*gW/6, 0.06*cH)
 
     	ctx.moveTo(0.02*cW, -i*gH/6)
     	ctx.lineTo(-0.02*cW, -i*gH/6)

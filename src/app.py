@@ -64,9 +64,19 @@ def listen():
 def monotonic_obs_eta():
     token = validate_token(request, DATAFOLDERPATH)
     target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
+    res = run_lm_on_loglines_obs(target_filepath)
+    return jsonify(res)
+
+
+def monotonic_obs_eta_direct(token):
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
+    return run_lm_on_loglines_obs(target_filepath)
+
+
+def run_lm_on_loglines_obs(target_filepath):
     bigL = get_all_logged_lines(target_filepath, "OBS")
     if len(bigL) < 3:
-        return Response("too few datapoints to predict",200)
+        return Response("too few datapoints to predict", 200)
     # note that y is the time and x is the value, because i'm interested in the y value where x == 1 (the intercept)
     y = np.asarray([float(x[1]) for x in bigL])
     x = np.asarray([float(x[2]) for x in bigL])
@@ -82,12 +92,15 @@ def monotonic_obs_eta():
     if len(np.unique(x_final)) < 3:
         return Response("too few datapoints to predict", 200)
     values_to_infer = np.linspace(0.0, 1.0, 21)
-    lower, p_y, upper, z, r_squared = lm_with_ci(x=x_final, y=y_final,p_x = values_to_infer)
-    payload = {"OBS": {"values": list(x_final), "unixtimes":list(y_final)}, "predictions": {"values_to_infer": list(values_to_infer), "unixtime_predicted": list(p_y), "unixtime_upperbound": upper, "unixtime_lowerbound": lower, "m":z[0], "b":z[1], "r_squared": float(r_squared)}}
-    return jsonify(payload)
+    lower, p_y, upper, z, r_squared = lm_with_ci(x=x_final, y=y_final, p_x=values_to_infer)
+    payload = {"OBS": {"values": list(x_final), "unixtimes": list(y_final)},
+               "predictions": {"values_to_infer": list(values_to_infer), "unixtime_predicted": list(p_y),
+                               "unixtime_upperbound": upper, "unixtime_lowerbound": lower, "m": z[0], "b": z[1],
+                               "r_squared": float(r_squared)}}
+    return payload
 
 
-def lm_with_ci(x, y,  p_x):
+def lm_with_ci(x, y, p_x):
     """
     derived from # https://tomholderness.wordpress.com/2013/01/10/confidence_intervals/
     and
@@ -171,28 +184,30 @@ def set_contactinfo():
 def ping_discorder(discord_id, message):
     url = "https://ptb.discord.com/api/webhooks/769345876153729045/wWF2vgmF7a4c1TPiRgEjQTF1QPp8s9JogZYLMgM2e7fjKwPX25l00MeGY9P1i2wLwbmq"
 
-    payload = "{\"username\": \"LoopBot\", \"content\": \"<@%s> %s\"}"%(discord_id.value, message)
+    payload = "{\"username\": \"LoopBot\", \"content\": \"<@%s> %s\"}" % (discord_id.value, message)
     headers = {
         'Content-Type': 'application/json'
     }
     response = requests.request("POST", url, headers=headers, data=payload)
     return response.text.encode('utf8')
 
+
 @app.route('/ping_now/', methods=['POST', 'GET'])
 def ping_now():
     token = validate_token(request, DATAFOLDERPATH)
-    res = ping_discorder(get_contactinfo(token, DATAFOLDERPATH),"Ping_Now: All Done Now!")
-    return('posted')
+    res = ping_discorder(get_contactinfo(token, DATAFOLDERPATH), "Ping_Now: All Done Now!")
+    return ('posted')
+
 
 def ping_discord_general(message):
     url = "https://ptb.discord.com/api/webhooks/769345876153729045/wWF2vgmF7a4c1TPiRgEjQTF1QPp8s9JogZYLMgM2e7fjKwPX25l00MeGY9P1i2wLwbmq"
 
-    payload = "{\"username\": \"LoopBot\", \"content\": \"%s\"}"%(message)
+    payload = "{\"username\": \"LoopBot\", \"content\": \"%s\"}" % (message)
     headers = {
         'Content-Type': 'application/json'
     }
     response = requests.request("POST", url, headers=headers, data=payload)
-    return(response)
+    return (response)
 
 
 @app.route('/ping_general/', methods=['POST', 'GET'])
@@ -206,11 +221,11 @@ def set_discord_id():
     token: str = validate_token(request, DATAFOLDERPATH)
     discord_id: str = request.args.get("id_no")
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_discord_id.txt" % token)
-    print('should APN ping with %s'%discord_id)
+    print('should APN ping with %s' % discord_id)
     # overwrite prior apn info
     with open(target_filepath, "w") as myfile:
         myfile.writelines(discord_id)
-    message="Welcome to the team!"
+    message = "Welcome to the team!"
     ping_discorder(discord_id, message)
     return Response(
         "added new apn info:" + discord_id,
@@ -229,6 +244,7 @@ def get_contactinfo_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
     contact_info = DiscordID.to_json(get_contactinfo(token, DATAFOLDERPATH))
     return contact_info
+
 
 @app.route('/get_predicates/', methods=['GET'])
 def get_predicates_endpoint():
@@ -287,11 +303,16 @@ def update():
 def ping_user(obs, token, message_type):
     app.logger.info("Sending %s push notification to user phone" % message_type)
     discord_id = get_contactinfo(token, DATAFOLDERPATH)
-    res  = ping_discorder(discord_id,"Loop says:%s,%s" % (message_type,obs))
+    if message_type=="obs":
+        monotonic_lm = monotonic_obs_eta_direct(token)
+        eta = monotonic_lm["unixtime_predicted"][11]
+    else:
+        eta = "NA"
+    res = ping_discorder(discord_id, "Loop says:%s,%s. Done @ %s" % (message_type, obs, eta))
     if res == None:
         print("posted to discord")
     else:
-        raise Exception("discord had an issue with your discord ID: %s"%discord_id)
+        raise Exception("discord had an issue with your discord ID: %s" % discord_id)
 
 
 @app.route('/update_screenshot/', methods=['POST'])
