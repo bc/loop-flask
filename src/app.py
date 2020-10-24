@@ -78,24 +78,36 @@ def monotonic_obs_eta():
         last_drop = indices_where_value_dropped[-1] + 1
         x_final = x[last_drop:]
         y_final = y[last_drop:]
-
+    # need at least 2 datapoints that are different to linearly fit
+    if len(np.unique(x_final)) < 2:
+        return Response("too few datapoints to predict", 200)
     values_to_infer = np.linspace(0.0, 1.0, 21)
-    lower, p_y, upper, z = lm_with_ci(x=x_final, y=y_final,p_x = values_to_infer)
-    payload = {"OBS": {"values": list(x_final), "unixtimes":list(y_final)}, "predictions": {"values_to_infer": list(values_to_infer), "unixtime_predicted": list(p_y), "unixtime_upperbound": upper, "unixtime_lowerbound": lower, "m":z[0], "b":z[1]}}
+    lower, p_y, upper, z, r_squared = lm_with_ci(x=x_final, y=y_final,p_x = values_to_infer)
+    payload = {"OBS": {"values": list(x_final), "unixtimes":list(y_final)}, "predictions": {"values_to_infer": list(values_to_infer), "unixtime_predicted": list(p_y), "unixtime_upperbound": upper, "unixtime_lowerbound": lower, "m":z[0], "b":z[1], "r_squared": float(r_squared)}}
     return jsonify(payload)
 
 
 def lm_with_ci(x, y,  p_x):
     """
     derived from # https://tomholderness.wordpress.com/2013/01/10/confidence_intervals/
+    and
+    https://stackoverflow.com/questions/893657/how-do-i-calculate-r-squared-using-python-and-numpy
     :param x: ndarray of floats/ints
     :param y: ndarray of floats/ints, same len as x
     :param p_x: values to predict on x with confidence intervals at 95% CI
+    :param r_squared: the coefficient of determination
     :return:
     """
 
     z = np.polyfit(x, y, 1)
     p = np.poly1d(z)
+
+    # fit values, and mean
+    yhat = p(x)  # or [p(z) for z in x]
+    ybar = np.sum(y) / len(y)  # or sum(y)/len(y)
+    ssreg = np.sum((yhat - ybar) ** 2)  # or sum([ (yihat - ybar)**2 for yihat in yhat])
+    sstot = np.sum((y - ybar) ** 2)  # or sum([ (yi - ybar)**2 for yi in y])
+    r_squared_val = ssreg / sstot
     fit = p(x)
     # get the coordinates for the fit curve
     c_y = [np.min(fit), np.max(fit)]
@@ -118,7 +130,7 @@ def lm_with_ci(x, y,  p_x):
     # get lower and upper confidence limits based on predicted y and confidence intervals
     lower = list(p_y - abs(confs))
     upper = list(p_y + abs(confs))
-    return lower, p_y, upper, z
+    return lower, p_y, upper, z, r_squared_val
 
 
 @app.route('/set_predicates/', methods=['POST', 'GET'])

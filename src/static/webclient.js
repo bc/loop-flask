@@ -267,60 +267,76 @@ document.getElementById("python_obs_code_snippet").innerText = `import requests;
 
 var mychart_canvas = document.getElementById('myChart')
 setInterval(function (){
-    // debugger;
     fetch(`/monotonic_obs_eta/?token=${get_token_from_param()}`, {
   method: 'GET',
   redirect: 'follow'
 })
   .then(response => response.text())
   .then(result => {
-      console.log(result);
+      // console.log(result);
       if(result == "too few datapoints to predict"){
           return;
       } else{
-        _userdata["modeling"] = result;
+        _userdata["modeling"] = JSON.parse(result);
       }
   })
   .catch(error => console.log('error', error));
-},5000)
+},1000)
 
 
 setInterval(function(){
     if (_userdata["modeling"] == null){
         return
-    } else if(_userdata["modeling"]["OBS"] == null){
-        return
-    } else if (_userdata["modeling"]["OBS"]["unixtimes"] == null){
-        return
     } else if (_userdata["modeling"]["OBS"]["unixtimes"].length > 2){
-        plotData(_userdata["modeling"]["OBS"]["unixtimes"], _userdata["modeling"]["OBS"]["values"], mychart_canvas)
+        plotData(_userdata["modeling"]["OBS"]["unixtimes"], _userdata["modeling"]["OBS"]["values"], _userdata["modeling"]["predictions"],mychart_canvas)
     }
 }, 500)
-function plotData(arrX, arrY, Canvas){
+
+const predictions_table_p = document.getElementById("predictions_table_p")
+
+
+setInterval(function(){
+    if (_userdata["modeling"] == null){
+        return
+    } else if (_userdata["modeling"]["OBS"]["unixtimes"].length > 2){
+        var pred = _userdata["modeling"]["predictions"]["unixtime_predicted"][20]
+        var pred_timestamp = new Date(pred*1000).toLocaleTimeString('en-US')
+        var ci_margin = _userdata["modeling"]["predictions"]["unixtime_upperbound"][20] - pred
+        var margin = milliseconds_to_human_readable(ci_margin)
+        var lower = _userdata["modeling"]["predictions"]["unixtime_lowerbound"][20]
+        // debugger;
+        predictions_table_p.innerHTML = `Process finishes at ${pred_timestamp}, plus or minus ${margin}, (95% confidence interval)`
+    }
+}, 500)
+
+function plotData(arrX, arrY,  predictions,Canvas){
+    console.log('plotting time')
     var ctx = Canvas.getContext('2d'), cW= Canvas.offsetWidth, cH= Canvas.offsetHeight
 	ctx.setTransform(1, 0, 0, 1, 0, 0)
-    ctx.fillStyle="rgb(255,243,240)"
+    ctx.fillStyle="rgb(255,255,255)"
     ctx.fillRect(0,0,cW,cH)
 
+
+
+    //axes and arrows
     ctx.strokeStyle='black'
     ctx.beginPath()
-	ctx.moveTo(0.1*cW, 0.05*cH)
 	ctx.lineTo(0.08*cW, 0.08*cH)
-	ctx.moveTo(0.1*cW, 0.05*cH)
 	ctx.lineTo(0.12*cW, 0.08*cH)
 	ctx.moveTo(0.1*cW, 0.05*cH)
 	ctx.lineTo(0.1*cW, 0.9*cH)
 	ctx.lineTo(0.95*cW, 0.9*cH)
-	ctx.lineTo(0.92*cW, 0.88*cH)
+
 	ctx.moveTo(0.95*cW, 0.9*cH)
-	ctx.lineTo(0.92*cW, 0.92*cH)
+
     ctx.stroke()
+
     ctx.translate(0.1*cW, 0.9*cH)
     ctx.scale(1,-1)
     ctx.stroke()
-
-    var minX= Math.min.apply(null, arrX), minY= Math.min.apply(null, arrY)
-    var maxX= Math.max.apply(null, arrX), maxY= Math.max.apply(null, arrY)
+    const current_unixtime =  Date.now() / 1000
+    var minX= Math.min.apply(null, arrX), minY= 0.0
+    var maxX= current_unixtime, maxY= 1.0
     var wX=maxX-minX, wY=maxY-minY
     var gW=0.95*cW-0.1*cW, gH=0.9*cH-0.05*cH
     var facX=gW/wX, facY=gH/wY
@@ -328,13 +344,12 @@ function plotData(arrX, arrY, Canvas){
     ctx.beginPath()
     ctx.fillStyle='blue'
     ctx.strokeStyle='black'
-    ctx.lineWidth= 0.002*(cW+cH)
-	var sqW=0.02*cW, sqH=0.02*cH
+    ctx.lineWidth= 0.001*(cW+cH)
 	var newX, newY
+    //plot datapoints on screen
 	for (var i in arrX){
 		newX= (arrX[i]-minX)*facX
 		newY= (arrY[i]-minY)*facY
-    	ctx.fillRect(newX-sqW/2, newY-sqH/2, sqW, sqH)
     	if (i==0)
     		ctx.moveTo(newX,newY)
     	else
@@ -342,11 +357,73 @@ function plotData(arrX, arrY, Canvas){
     }
     ctx.stroke()
 
+    //plot linear fit
+    ctx.beginPath()
+
+    ctx.lineWidth= 0.002*(cW+cH)
+	var newX, newY
+    //plot datapoints on screen
+    lm_X = predictions["unixtime_predicted"]
+    lm_Y = predictions["values_to_infer"]
+	for (var i in arrX){
+		newX= (lm_X[i]-minX)*facX
+		newY= (lm_Y[i]-minY)*facY
+    	if (i==0)
+    		ctx.moveTo(newX,newY)
+    	else
+    		ctx.lineTo(newX,newY)
+    }
+	ctx.strokeStyle='green'
+    ctx.stroke()
+    //end plot linear fit
+
+     //plot upper and lowerbound
+    ctx.beginPath()
+
+    ctx.lineWidth= 0.002*(cW+cH)
+	var newX, newY
+    //plot datapoints on screen
+    lm_X_u = predictions["unixtime_upperbound"]
+    lm_Y_u = predictions["values_to_infer"]
+	for (var i in arrX){
+		newX= (lm_X_u[i]-minX)*facX
+		newY= (lm_Y_u[i]-minY)*facY
+    	if (i==0)
+    		ctx.moveTo(newX,newY)
+    	else
+    		ctx.lineTo(newX,newY)
+    }
+
+	//now plot lowerbound
+        lm_X_u = predictions["unixtime_lowerbound"]
+    lm_Y_u = predictions["values_to_infer"]
+	for (var i in arrX){
+		newX= (lm_X_u[i]-minX)*facX
+		newY= (lm_Y_u[i]-minY)*facY
+    	if (i==0)
+    		ctx.moveTo(newX,newY)
+    	else
+    		ctx.lineTo(newX,newY)
+    }
+
+    ctx.closePath();
+	ctx.strokeStyle='green'
+    ctx.fillStyle = "red";
+    ctx.fill();
+    // ctx.stroke()
+    //end plot linear fit
+
+
+    ctx.strokeStyle='pink'
+    ctx.beginPath()
+	ctx.lineTo(0.08*cW, 0.08*cH)
+
+
 	ctx.scale(1,-1)
     ctx.fillStyle='darkblue'
  	ctx.textBaseline= 'middle'
 	ctx.textAlign= 'center'
-	var fntSize=0.02*(cW+cH)
+	var fntSize=8;
    	ctx.font= fntSize+"pt serif"
    	var txtB= '('+minX+','+minY+')'
    	var txtBW=ctx.measureText(txtB).width
@@ -370,5 +447,9 @@ function plotData(arrX, arrY, Canvas){
     }
     ctx.strokeStyle='purple'
     ctx.stroke()
+
+    ctx.strokeStyle="yellow"
+    ctx.beginPath()
+
 
 }
