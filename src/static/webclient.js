@@ -59,7 +59,9 @@ function b_handle(d) {
         } else if (observation_type=="OBS"){
             const v = {x: when, y: observation.value}
             update_OBS_view(v)
+            var priorlen = _userdata["OBS"].length
             _userdata[observation_type].push(v);
+            console.log(`length on ${observation_type} was ${priorlen} but now it is ${_userdata["OBS"].length}`)
         } else{
             throw Error("unacceptable input observation type")
         }
@@ -72,11 +74,6 @@ function b_handle(d) {
     }
 
     var response = JSON.parse(d);
-    // base case
-    if (_userdata.CPU.length == 0){
-        update_local_model("CPU", response["CPU"]);
-        return 0;
-    }
 
     function push_if_it_is_a_new_value(observation_type, observation) {
         const new_time = new Date(observation["unixtime"] * 1000)
@@ -192,7 +189,7 @@ if (!myToken) {
             get_predicate_from_server("predicate_check_serverside");
             get_contactinfo_from_server('contactinfo_check_serverside');
         }
-    ,2000)
+    ,800)
 }
 
 
@@ -267,7 +264,10 @@ document.getElementById("matlab_obs_code_snippet").innerText = `system("${curl_c
 document.getElementById("python_obs_code_snippet").innerText = `import requests;print(requests.request("POST","${window.location.protocol}//${window.location.host}/update_obs/?token=${token}&obs=%s"%val, headers={}, data = {}).text.encode('utf8'))`
 
 var mychart_canvas = document.getElementById('myChart')
-
+// setInterval(function (){
+//     // debugger;
+//     plotData(_userdata.OBS, _userdata.CPU,mychart_canvas)
+// },1000)
 function plotData(arrX, arrY, Canvas){
     var ctx = Canvas.getContext('2d'), cW= Canvas.offsetWidth, cH= Canvas.offsetHeight
 	ctx.setTransform(1, 0, 0, 1, 0, 0)
