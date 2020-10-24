@@ -65,7 +65,7 @@ def monotonic_obs_eta():
     token = validate_token(request, DATAFOLDERPATH)
     target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
     bigL = get_all_logged_lines(target_filepath, "OBS")
-    if len(bigL) < 2:
+    if len(bigL) < 3:
         return Response("too few datapoints to predict",200)
     # note that y is the time and x is the value, because i'm interested in the y value where x == 1 (the intercept)
     y = np.asarray([float(x[1]) for x in bigL])
@@ -79,7 +79,7 @@ def monotonic_obs_eta():
         x_final = x[last_drop:]
         y_final = y[last_drop:]
     # need at least 2 datapoints that are different to linearly fit
-    if len(np.unique(x_final)) < 2:
+    if len(np.unique(x_final)) < 3:
         return Response("too few datapoints to predict", 200)
     values_to_infer = np.linspace(0.0, 1.0, 21)
     lower, p_y, upper, z, r_squared = lm_with_ci(x=x_final, y=y_final,p_x = values_to_infer)
@@ -128,8 +128,10 @@ def lm_with_ci(x, y,  p_x):
     # now predict y based on test x-values
     p_y = z[0] * p_x + z[1]
     # get lower and upper confidence limits based on predicted y and confidence intervals
-    lower = list(p_y - abs(confs))
-    upper = list(p_y + abs(confs))
+    confs_abs = abs(confs)
+    # case where r==1
+    lower = list(p_y - confs_abs)
+    upper = list(p_y + confs_abs)
     return lower, p_y, upper, z, r_squared_val
 
 

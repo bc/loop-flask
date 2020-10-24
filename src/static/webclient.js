@@ -61,12 +61,11 @@ function b_handle(d) {
             update_OBS_view(v)
             var priorlen = local_data_target["OBS"].length
             local_data_target[observation_type].push(v);
-            console.log(`length on ${observation_type} was ${priorlen} but now it is ${local_data_target["OBS"].length}`)
         } else{
             throw Error("unacceptable input observation type")
         }
         try {
-        console.log(`OBSlen:${local_data_target.OBS.length}\nCPUlen:${local_data_target.CPU.length}`)
+        // console.log(`OBSlen:${local_data_target.OBS.length}\nCPUlen:${local_data_target.CPU.length}`)
         } catch (e) {
             debugger;
         }
@@ -277,10 +276,15 @@ setInterval(function (){
       if(result == "too few datapoints to predict"){
           return;
       } else{
+          try{
+        console.log(result)
         _userdata["modeling"] = JSON.parse(result);
+          } catch (e) {
+              debugger;
+          }
       }
   })
-  .catch(error => console.log('error', error));
+  .catch(error => {console.log('error', error); });
 },1000)
 
 
@@ -290,7 +294,7 @@ setInterval(function(){
     } else if (_userdata["modeling"]["OBS"]["unixtimes"].length > 2){
         plotData(_userdata["modeling"]["OBS"]["unixtimes"], _userdata["modeling"]["OBS"]["values"], _userdata["modeling"]["predictions"],mychart_canvas)
     }
-}, 500)
+}, 2000)
 
 const predictions_table_p = document.getElementById("predictions_table_p")
 
@@ -304,13 +308,11 @@ setInterval(function(){
         var ci_margin = _userdata["modeling"]["predictions"]["unixtime_upperbound"][20] - pred
         var margin = milliseconds_to_human_readable(ci_margin)
         var lower = _userdata["modeling"]["predictions"]["unixtime_lowerbound"][20]
-        // debugger;
-        predictions_table_p.innerHTML = `Process finishes at ${pred_timestamp}, plus or minus ${margin}, (95% confidence interval)`
+        predictions_table_p.innerHTML = `Process finishes at <mark>${pred_timestamp}</mark>, plus or minus ${margin}, (95% confidence interval)`
     }
-}, 500)
+}, 2000)
 
 function plotData(arrX, arrY,  predictions,Canvas){
-    console.log('plotting time')
     var ctx = Canvas.getContext('2d'), cW= Canvas.offsetWidth, cH= Canvas.offsetHeight
 	ctx.setTransform(1, 0, 0, 1, 0, 0)
     ctx.fillStyle="rgb(255,255,255)"
@@ -355,68 +357,37 @@ function plotData(arrX, arrY,  predictions,Canvas){
     	else
     		ctx.lineTo(newX,newY)
     }
-    ctx.stroke()
+	ctx.lineTo(current_unixtime,(arrX[i]-minX)*facX)
+    ctx.stroke();
+    ctx.closePath();
+    //end basic datapoints
 
-    //plot linear fit
+    //plot linear fit line
     ctx.beginPath()
 
     ctx.lineWidth= 0.002*(cW+cH)
-	var newX, newY
+	var newX_lm, newY_lm
     //plot datapoints on screen
     lm_X = predictions["unixtime_predicted"]
     lm_Y = predictions["values_to_infer"]
-	for (var i in arrX){
-		newX= (lm_X[i]-minX)*facX
-		newY= (lm_Y[i]-minY)*facY
+	for (var i in lm_X){
+		newX_lm= (lm_X[i]-minX)*facX
+		newY_lm= (lm_Y[i]-minY)*facY
     	if (i==0)
-    		ctx.moveTo(newX,newY)
+    		ctx.moveTo(newX_lm,newY_lm)
     	else
-    		ctx.lineTo(newX,newY)
+    		ctx.lineTo(newX_lm,newY_lm)
     }
-	ctx.strokeStyle='green'
-    ctx.stroke()
-    //end plot linear fit
-
-     //plot upper and lowerbound
-    ctx.beginPath()
-
-    ctx.lineWidth= 0.002*(cW+cH)
-	var newX, newY
-    //plot datapoints on screen
-    lm_X_u = predictions["unixtime_upperbound"]
-    lm_Y_u = predictions["values_to_infer"]
-	for (var i in arrX){
-		newX= (lm_X_u[i]-minX)*facX
-		newY= (lm_Y_u[i]-minY)*facY
-    	if (i==0)
-    		ctx.moveTo(newX,newY)
-    	else
-    		ctx.lineTo(newX,newY)
-    }
-
-	//now plot lowerbound
-        lm_X_u = predictions["unixtime_lowerbound"]
-    lm_Y_u = predictions["values_to_infer"]
-	for (var i in arrX){
-		newX= (lm_X_u[i]-minX)*facX
-		newY= (lm_Y_u[i]-minY)*facY
-    	if (i==0)
-    		ctx.moveTo(newX,newY)
-    	else
-    		ctx.lineTo(newX,newY)
-    }
-
-    ctx.closePath();
-	ctx.strokeStyle='green'
-    ctx.fillStyle = "red";
-    ctx.fill();
-    // ctx.stroke()
-    //end plot linear fit
+	ctx.stroke();
+	ctx.closePath();
+    //end linear fit line
 
 
-    ctx.strokeStyle='pink'
-    ctx.beginPath()
-	ctx.lineTo(0.08*cW, 0.08*cH)
+
+
+        ctx.strokeStyle='pink'
+    ctx.beginPath();
+	ctx.lineTo(0.08*cW, 0.08*cH);
 
 
 	ctx.scale(1,-1)
