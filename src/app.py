@@ -96,12 +96,18 @@ def set_contactinfo():
 def ping_discorder(discord_id, message):
     url = "https://ptb.discord.com/api/webhooks/769345876153729045/wWF2vgmF7a4c1TPiRgEjQTF1QPp8s9JogZYLMgM2e7fjKwPX25l00MeGY9P1i2wLwbmq"
 
-    payload = "{\"username\": \"LoopBot\", \"content\": \"%s<@%s>\"}"%(discord_id.value, message)
+    payload = "{\"username\": \"LoopBot\", \"content\": \"<@%s> %s\"}"%(discord_id.value, message)
     headers = {
         'Content-Type': 'application/json'
     }
     response = requests.request("POST", url, headers=headers, data=payload)
-    print(response.text.encode('utf8'))
+    return response.text.encode('utf8')
+
+@app.route('/ping_now/', methods=['POST', 'GET'])
+def ping_now():
+    token = validate_token(request, DATAFOLDERPATH)
+    res = ping_discorder(get_contactinfo(token, DATAFOLDERPATH),"Ping_Now: All Done Now!")
+    return('posted')
 
 def ping_discord_general(message):
     url = "https://ptb.discord.com/api/webhooks/769345876153729045/wWF2vgmF7a4c1TPiRgEjQTF1QPp8s9JogZYLMgM2e7fjKwPX25l00MeGY9P1i2wLwbmq"
@@ -147,7 +153,6 @@ def clear_contactinfo_endpoint():
 def get_contactinfo_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
     contact_info = DiscordID.to_json(get_contactinfo(token, DATAFOLDERPATH))
-    print(contact_info)
     return contact_info
 
 @app.route('/get_predicates/', methods=['GET'])
@@ -208,7 +213,10 @@ def ping_user(obs, token, message_type):
     app.logger.info("Sending %s push notification to user phone" % message_type)
     discord_id = get_contactinfo(token, DATAFOLDERPATH)
     res  = ping_discorder(discord_id,"Loop says:%s,%s" % (message_type,obs))
-    print("discord outcome: " + res)
+    if res == None:
+        print("posted to discord")
+    else:
+        raise Exception("discord had an issue with your discord ID: %s"%discord_id)
 
 
 @app.route('/update_screenshot/', methods=['POST'])
