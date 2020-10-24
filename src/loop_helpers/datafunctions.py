@@ -14,7 +14,7 @@ from flask import abort
 class Observation:
     feature: str
     value: float
-
+    unixtime: float = None
 
 
 def get_files(mypath):
@@ -27,10 +27,14 @@ def base_names(file_list):
 
 
 def get_last_observation_line(filepath, valType="OBS"):
+    return get_all_logged_lines(filepath, valType=valType)[-1]
+
+def get_all_logged_lines(filepath, valType="OBS"):
     with open(filepath, "rb") as f:
         observations = [x.decode("utf-8") for x in f.readlines()]
-        v = [x for x in observations if x.startswith(valType)][-1].rstrip().split(",")
-        return v
+        obs_vals = [x for x in observations if x.startswith(valType) if "-1" not in x]
+        list_of_pieces = [y.rstrip().split(",") for y in obs_vals]
+        return list_of_pieces
 
 def compose_CPU(name, value):
     return "CPU,%s,%s,%s\n" % (time.time(), name, value)

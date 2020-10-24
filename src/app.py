@@ -1,7 +1,7 @@
 import logging
 import logging
 import os
-
+import numpy as np
 import requests
 import sentry_sdk
 from flask import Flask, request, jsonify, abort, Response, render_template, redirect
@@ -9,7 +9,7 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 
 from loop_helpers.authentication import validate_token, gen_new_token
 from loop_helpers.datafunctions import get_last_observation_line, try_parse_object_as, compose_CPU, is_normalized, \
-    compose_OBS, Observation
+    compose_OBS, Observation, get_all_logged_lines
 from loop_helpers.notifications import push_telegram_notification, Predicate, get_contactinfo, \
     predicate_is_triggered, parse_predicate, list_of_predicate_to_json, get_predicates, clear_all_predicates, \
     clear_contactinfo, DiscordID
@@ -44,7 +44,7 @@ def listen():
     token = validate_token(request, DATAFOLDERPATH)
     target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
 
-    obs_type, time, obs = get_last_observation_line(target_filepath, "OBS")
+    my_obs = get_last_observation_line(target_filepath, "OBS")
     cpu_type, cpu_time, cpu_name, cpu_obs = get_last_observation_line(target_filepath, "CPU")
 
     payload = {"OBS": {
@@ -58,6 +58,65 @@ def listen():
         }
     }
     return jsonify(payload)
+
+
+@app.route('/monotonic_obs_eta/', methods=['GET'])
+def monotonic_obs_eta():
+    token = validate_token(request, DATAFOLDERPATH)
+    target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
+    bigL = get_all_logged_lines(target_filepath, "OBS")
+
+    # note that y is the time and x is the value, because i'm interested in the y value where x == 1 (the intercept)
+    y = np.asarray([float(x[1]) for x in bigL])
+    x = np.asarray([float(x[2]) for x in bigL])
+    indices_where_value_dropped = [i for i, val in enumerate(np.diff(x)) if val < 0.0]
+    if len(indices_where_value_dropped) == 0:
+        x_final = x
+        y_final = y
+    else:
+        last_drop = indices_where_value_dropped[-1] + 1
+        x_final = x[last_drop:]
+        y_final = y[last_drop:]
+
+    lower, p_y, upper, z = lm_with_ci(x_final, y_final)
+    payload = {"OBS": {"values": list(x_final), "unixtimes":list(y_final)}, "predictions": {"unixtime_predicted": list(p_y), "unixtime_upperbound": upper, "unixtime_lowerbound": lower, "m":z[0], "b":z[1]}}
+    return jsonify(payload)
+
+
+def lm_with_ci(x, y,  p_x = np.arange(1.0)):
+    """
+    derived from # https://tomholderness.wordpress.com/2013/01/10/confidence_intervals/
+    :param x: ndarray of floats/ints
+    :param y: ndarray of floats/ints, same len as x
+    :param p_x: values to predict on x with confidence intervals at 95% CI
+    :return:
+    """
+
+    z = np.polyfit(x, y, 1)
+    p = np.poly1d(z)
+    fit = p(x)
+    # get the coordinates for the fit curve
+    c_y = [np.min(fit), np.max(fit)]
+    c_x = [np.min(x), np.max(x)]
+    # predict y values of original data using the fit
+    p_y = z[0] * x + z[1]
+    # calculate the y-error (residuals)
+    y_err = y - p_y
+    # create series of new test x-values to predict for
+
+    # now calculate confidence intervals for new test x-series
+    mean_x = np.mean(x)  # mean of x
+    n = len(x)  # number of samples in original fit
+    t = 2.31  # appropriate t value (where n=9, two tailed 95%)
+    s_err = np.sum(np.power(y_err, 2))  # sum of the squares of the residuals
+    confs = t * np.sqrt((s_err / (n - 2)) * (1.0 / n + (np.power((p_x - mean_x), 2) /
+                                                        ((np.sum(np.power(x, 2))) - n * (np.power(mean_x, 2))))))
+    # now predict y based on test x-values
+    p_y = z[0] * p_x + z[1]
+    # get lower and upper confidence limits based on predicted y and confidence intervals
+    lower = list(p_y - abs(confs))
+    upper = list(p_y + abs(confs))
+    return lower, p_y, upper, z
 
 
 @app.route('/set_predicates/', methods=['POST', 'GET'])
