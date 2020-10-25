@@ -139,7 +139,7 @@ def predicate_is_triggered(token, o: Observation, DATAFOLDERPATH):
         return False
     relevant_predicates = [p for p in predicates if p.feature == o.feature]
     predicate_matches = [p.evaluate(o) for p in relevant_predicates]
-    print(predicate_matches)
+
     result = any(predicate_matches)
     if result == True:
         clear_all_predicates(token, DATAFOLDERPATH)
@@ -149,13 +149,11 @@ def clear_all_predicates(token, DATAFOLDERPATH):
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_predicates.txt" % token)
     if os.path.isfile(target_filepath):
         os.remove(target_filepath)
-    print("rm predicates for token %s" % token)
 
 def clear_contactinfo(token,DATAFOLDERPATH):
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)
     if os.path.isfile(target_filepath):
         os.remove(target_filepath)
-    print("rm contactinfo for token %s" % token)
 
 def get_contactinfo(token, DATAFOLDERPATH):
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_contactinfo.txt" % token)

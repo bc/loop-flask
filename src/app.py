@@ -221,7 +221,6 @@ def set_discord_id():
     token: str = validate_token(request, DATAFOLDERPATH)
     discord_id: str = request.args.get("id_no")
     target_filepath = os.path.join(DATAFOLDERPATH, "%s_discord_id.txt" % token)
-    print('should APN ping with %s' % discord_id)
     # overwrite prior apn info
     with open(target_filepath, "w") as myfile:
         myfile.writelines(discord_id)
@@ -312,10 +311,10 @@ def ping_user(obs, token, message_type):
     else:
         eta = "NA"
     res = ping_discorder(discord_id, "Loop says:%s,%s. Done @ %s" % (message_type, obs, eta))
-    if res == None:
-        print("posted to discord")
+    if res == b'':
+        return("posted to discord")
     else:
-        raise Exception("discord had an issue with your discord ID: %s" % discord_id)
+        raise Exception("discord had an issue with your discord ID: %s, %s" % (discord_id, res))
 
 
 @app.route('/update_screenshot/', methods=['POST'])
