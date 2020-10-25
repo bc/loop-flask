@@ -84,7 +84,7 @@ function gen_and_send_predicate(form_id, button_id, predicate_raw_id) {
     const form_elements = get_form_elements(form_id)
     const statement = predicate_form_into_statement(form_elements);
     if (statement == ""){
-        return;
+
     } else{
 
     post_set_predicate(statement, button_id, predicate_raw_id)

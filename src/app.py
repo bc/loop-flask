@@ -305,7 +305,10 @@ def ping_user(obs, token, message_type):
     discord_id = get_contactinfo(token, DATAFOLDERPATH)
     if message_type=="obs":
         monotonic_lm = monotonic_obs_eta_direct(token)
-        eta = monotonic_lm["unixtime_predicted"][11]
+        try:
+            eta = monotonic_lm["predictions"]["unixtime_predicted"][11]
+        except:
+            eta = "NA"
     else:
         eta = "NA"
     res = ping_discorder(discord_id, "Loop says:%s,%s. Done @ %s" % (message_type, obs, eta))

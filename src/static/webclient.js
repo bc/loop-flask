@@ -276,7 +276,7 @@ setInterval(function (){
   .then(result => {
       // console.log(result);
       if(result == "too few datapoints to predict"){
-          return;
+
       } else{
           try{
         console.log(result)
@@ -292,7 +292,7 @@ setInterval(function (){
 
 setInterval(function(){
     if (_userdata["modeling"] == null){
-        return
+
     } else if (_userdata["modeling"]["OBS"]["unixtimes"].length > 2){
         plotData(_userdata["modeling"]["OBS"]["unixtimes"], _userdata["modeling"]["OBS"]["values"], _userdata["modeling"]["predictions"],mychart_canvas)
     }
@@ -303,7 +303,7 @@ const predictions_table_p = document.getElementById("predictions_table_p")
 
 setInterval(function(){
     if (_userdata["modeling"] == null){
-        return
+
     } else if (_userdata["modeling"]["OBS"]["unixtimes"].length > 2){
         var pred = _userdata["modeling"]["predictions"]["unixtime_predicted"][20]
         var pred_timestamp = new Date(pred*1000).toLocaleTimeString('en-US')
