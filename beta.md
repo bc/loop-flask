@@ -1,4 +1,4 @@
-contacted, awaiting reply on slack in MLops board:
+ntacted, awaiting reply on slack in MLops board:
 	@Demetrios
 	@David Aponte
 	@Emmanuel Raj
