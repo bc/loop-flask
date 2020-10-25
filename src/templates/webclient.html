@@ -12,6 +12,18 @@
         const url = new URL                  (window.location);
         const token = url.searchParams.get("token");
     </script>
+<style>
+    pre {
+        font-size: 10px;
+        padding: 3;
+         overflow-x: auto;
+            white-space: pre-wrap;
+            white-space: -moz-pre-wrap;
+            white-space: -pre-wrap;
+            white-space: -o-pre-wrap;
+            word-wrap: break-word;
+    }
+</style>
 </head>
 
 <body>
@@ -20,45 +32,86 @@
     <h1>Loop Web Client v0.3.0</h1>
 </header>
 
-<p open>
+<details open>
     <summary>Setup</summary>
 
-<h1>1. Set Discord ID (for notifications) <a href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID">Instructions</a></h1>
-<pre id="contactinfo_check_serverside">Serverside Contactinfo Status</pre>
-<input type="tel" placeholder="Paste Discord ID number here" id="discord_id_input">
+<h4>1. Set Discord ID (for notifications) <a href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID">Instructions</a></h4>
+<pre id="contactinfo_check_serverside">Discord Not Set Yet</pre>
+<input type="tel" placeholder="Paste Discord ID #" id="discord_id_input">
 <a>
     <button id="discord_set_button"
             onclick="post_contactinfo(document.getElementById('discord_id_input').value,'discord_set_button')">Set
     </button>
 </a>
+<br><br>
+    <h4>2. Add snippets inside your code, where val is within 0 and 1.</h4>
+    <br>
+    <p>Put one snippet inside your loop and one at the end of the script, so val ends at 1</p>
 
-    <h1>2. Add a snippet inside your inner loop, where val is within 0 and 1.</h1>
-    <h1>3. Add a snippet at the end of the loop, where val == 1</h1>
 
-    <h2>cURL Snippet</h2>
-    <pre id="curl_obs_code_snippet"></pre>
-    <h2>Python Snippet</h2>
-    <pre id="python_obs_code_snippet"></pre>
-    <h2>MatLab</h2>
-    <pre id="matlab_obs_code_snippet"></pre>
+
+curl<pre id="curl_obs_code_snippet">pyco</pre>py<pre  id="python_obs_code_snippet">pyco</pre>matlab<pre width="200px" id="matlab_obs_code_snippet">code</pre></td>
 
         <a href="https://curl.trillworks.com/">
-            Generate snippets for Ansible URI, MATLAB, Node.js, R, PHP, Go, Dart, JSON, Elixir, or Rust
+            Generator for other languages
         </a>
-        <a href="https://gist.github.com/bc/766fb0c70e229b4018caf7c6cbc133e3">Right click to download CPU monitor
-            script</a>
-
-
-    <h1>4. Run the CPU sniffer to track how hard the process is working</h1>
+<br><br>
+    <h4>3. Start the CPU sniffer to track how hard the process is working</h4>
     <pre id="bash_cpu_code_snippet"></pre>
-    <p>Once you've started your process, run this snippet in terminal and follow the instructions to track the process.</p>
-
-    <h1>Bookmark this page & Scan to take your progress to-go!</h1>
+    <p>Run this snippet in terminal and follow the instructions to track the process.<br> <a href="https://gist.github.com/bc/766fb0c70e229b4018caf7c6cbc133e3">Source Code</a></p>
+<br><br>
+    <h4>Bookmark this page & Scan to take your progress to-go!</h4>
     <script type="text/javascript">
         document.write(`<img href="${window.location.href}"><img width="100" src = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${window.location.href}"/></a>`)
     </script>
 
+
+    <br><br>
+    <h4>5. When do you want a ping?</h4>
+
+<form id="set_predicates">
+
+    <input type="checkbox" id="predicate_form_cpu_enabled" name="predicate_form_cpu_enabled" checked>
+    If the CPU
+    <select name="predicate_form_cpu_comparator">
+        <option value="<">goes below</option>
+        <option value=">">goes above</option>
+    </select>
+    <input type="number" id="predicate_form_cpu_val" name="predicate_form_cpu_val" min="0" max="10" value="0.2"
+           step="0.1">(where 0.2 means 20% CPU activity) <br>
+    <input type="checkbox" id="predicate_form_obs_enabled" name="predicate_form_obs_enabled" checked>
+    If the Progress
+    <select name="predicate_form_obs_comparator">
+        <option value=">">goes above</option>
+        <option value="<">goes below</option>
+    </select>
+
+    <input type="number" id="predicate_form_obs_val" name="predicate_form_obs_val" min="0.0" max="1.0" value="0.9"
+           step="0.1">
+    (where 0.9 means 90% complete)
+</form>
+<a>
+    <button id="predicate_set_button"
+            onclick="gen_and_send_predicate('set_predicates', 'predicate_set_button','predicate_raw')">Set
+    </button>
+</a>
+<h6>Press Set above to arm the predicate</h6>
+<pre id="predicate_check_serverside">Serverside Predicate Status</pre>
+<pre id="predicate_raw"></pre>
+
 </details>
+
+
+<h6 id="cpu_title">CPU</h6>
+<h1 id="cpu_val" style="color:#440dc9">———</h1>
+<kbd id="cpu_time">Loading Page</kbd>
+
+<h6>Progress</h6>
+<h1 id="obs_val" style="color:#2ca10c">———</h1>
+<kbd id="obs_time">Loading Page</kbd>
+
+<canvas id="myChart" width="800px" height="400"></canvas>
+<p id="predictions_table_p"></p>
 
 <details>
     <summary>Advanced Tools</summary>
@@ -117,48 +170,6 @@
     </p>
 
 </details>
-
-<h6 id="cpu_title">CPU</h6>
-<h1 id="cpu_val" style="color:#440dc9">———</h1>
-<kbd id="cpu_time">Loading Page</kbd>
-
-<h6>Progress</h6>
-<h1 id="obs_val" style="color:#2ca10c">———</h1>
-<kbd id="obs_time">Loading Page</kbd>
-
-<canvas id="myChart" width="800px" height="400"></canvas>
-<p id="predictions_table_p"></p>
-
-<h3>Ping me if:</h3>
-
-<form id="set_predicates">
-    CPU (where 0.2 means 20% CPU activity)
-    <input type="checkbox" id="predicate_form_cpu_enabled" name="predicate_form_cpu_enabled" checked>
-    <select name="predicate_form_cpu_comparator">
-        <option value=">">goes above</option>
-        <option value="<">goes below</option>
-    </select>
-    <input type="number" id="predicate_form_cpu_val" name="predicate_form_cpu_val" min="0" max="10" value="0.2"
-           step="0.1"> OR
-    <input type="checkbox" id="predicate_form_obs_enabled" name="predicate_form_obs_enabled" checked>
-    Progress (where 0.9 means 90% complete)
-    <select name="predicate_form_obs_comparator">
-        <option value=">">goes above</option>
-        <option value="<">goes below</option>
-    </select>
-
-    <input type="number" id="predicate_form_obs_val" name="predicate_form_obs_val" min="0.0" max="1.0" value="0.9"
-           step="0.1">
-</form>
-<a>
-    <button id="predicate_set_button"
-            onclick="gen_and_send_predicate('set_predicates', 'predicate_set_button','predicate_raw')">Set
-    </button>
-</a>
-<h6>Ping is armed when both are green. To re-arm the predicate, press Set above</h6>
-<pre id="predicate_check_serverside">Serverside Predicate Status</pre>
-<pre id="predicate_raw"></pre>
-
 </body>
 <script type=text/javascript src="static/webclient.js?version=1.4" type="module"></script>
 <script type=text/javascript src="static/predicate_helpers.js?version=1" type="module"></script>

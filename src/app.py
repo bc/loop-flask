@@ -65,7 +65,10 @@ def monotonic_obs_eta():
     token = validate_token(request, DATAFOLDERPATH)
     target_filepath = os.path.join(DATAFOLDERPATH, "%s.txt" % token)
     res = run_lm_on_loglines_obs(target_filepath)
-    return jsonify(res)
+    try:
+        return jsonify(res)
+    except:
+        return res
 
 
 def monotonic_obs_eta_direct(token):
