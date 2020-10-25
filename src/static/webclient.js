@@ -292,8 +292,8 @@ setInterval(function (){
 
 setInterval(function(){
     if (_userdata["modeling"] == null){
-
-    } else if (_userdata["modeling"]["OBS"]["unixtimes"].length > 2){
+        return;
+    }else if (_userdata["modeling"]["OBS"]["unixtimes"].length > 2){
         plotData(_userdata["modeling"]["OBS"]["unixtimes"], _userdata["modeling"]["OBS"]["values"], _userdata["modeling"]["predictions"],mychart_canvas)
     }
 }, 2000)
