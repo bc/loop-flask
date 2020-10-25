@@ -19,12 +19,21 @@
 <header>
     <h1>Loop Web Client v0.3.0</h1>
 </header>
-<details open>
+
+<p open>
     <summary>Setup</summary>
-    <h1>Scan to take your progress to-go</h1><br>
-    <script type="text/javascript">
-        document.write(`<img href="${window.location.href}"><img width="100" src = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${window.location.href}"/></a>`)
-    </script>
+
+<h1>1. Set Discord ID (for notifications) <a href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID">Instructions</a></h1>
+<pre id="contactinfo_check_serverside">Serverside Contactinfo Status</pre>
+<input type="tel" placeholder="Paste Discord ID number here" id="discord_id_input">
+<a>
+    <button id="discord_set_button"
+            onclick="post_contactinfo(document.getElementById('discord_id_input').value,'discord_set_button')">Set
+    </button>
+</a>
+
+    <h1>2. Add a snippet inside your inner loop, where val is within 0 and 1.</h1>
+    <h1>3. Add a snippet at the end of the loop, where val == 1</h1>
 
     <h2>cURL Snippet</h2>
     <pre id="curl_obs_code_snippet"></pre>
@@ -32,16 +41,22 @@
     <pre id="python_obs_code_snippet"></pre>
     <h2>MatLab</h2>
     <pre id="matlab_obs_code_snippet"></pre>
-    <p>
+
         <a href="https://curl.trillworks.com/">
             Generate snippets for Ansible URI, MATLAB, Node.js, R, PHP, Go, Dart, JSON, Elixir, or Rust
         </a>
         <a href="https://gist.github.com/bc/766fb0c70e229b4018caf7c6cbc133e3">Right click to download CPU monitor
             script</a>
-    <h3>Code to track CPU usage</h3>
-    <pre id="bash_cpu_code_snippet"></pre>
-    </p>
 
+
+    <h1>4. Run the CPU sniffer to track how hard the process is working</h1>
+    <pre id="bash_cpu_code_snippet"></pre>
+    <p>Once you've started your process, run this snippet in terminal and follow the instructions to track the process.</p>
+
+    <h1>Bookmark this page & Scan to take your progress to-go!</h1>
+    <script type="text/javascript">
+        document.write(`<img href="${window.location.href}"><img width="100" src = "https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${window.location.href}"/></a>`)
+    </script>
 
 </details>
 
@@ -111,15 +126,6 @@
 <h1 id="obs_val" style="color:#2ca10c">———</h1>
 <kbd id="obs_time">Loading Page</kbd>
 
-<p>
-<h3>Set Discord ID Info (so you can get a push notification) <a href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID">Instructions</a></h3>
-<input type="tel" placeholder="Discord ID to text" id="discord_id_input">
-<a>
-    <button id="discord_set_button"
-            onclick="post_contactinfo(document.getElementById('discord_id_input').value,'discord_set_button')">Set
-    </button>
-</a>
-</p>
 <canvas id="myChart" width="800px" height="400"></canvas>
 <p id="predictions_table_p"></p>
 
@@ -151,7 +157,6 @@
 </a>
 <h6>Ping is armed when both are green. To re-arm the predicate, press Set above</h6>
 <pre id="predicate_check_serverside">Serverside Predicate Status</pre>
-<pre id="contactinfo_check_serverside">Serverside Contactinfo Status</pre>
 <pre id="predicate_raw"></pre>
 
 </body>
