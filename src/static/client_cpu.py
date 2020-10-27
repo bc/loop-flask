@@ -10,6 +10,7 @@ import psutil
 import requests
 import time
 import json
+import multiprocessing
 import sys
 
 input("Once your process is running, press Enter\n")
@@ -104,4 +105,9 @@ def main(host_and_port, loop_token, inter_sample_delay, cooldown_timer):
 
 
 if __name__ == "__main__":
+    print("View your monitor here: http://142.93.117.219:5000/webclient?token=%s" % sys.argv[2])
+    cores = multiprocessing.cpu_count()
+    print('%s cores detected' % cores)
+    print('BC: CPU Tracker Version: 0.0.2')
+    input("Once your process is running, press Enter\n")
     main(host_and_port=sys.argv[1], loop_token=sys.argv[2], inter_sample_delay=10, cooldown_timer=0)
