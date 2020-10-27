@@ -105,7 +105,7 @@ def main(host_and_port, loop_token, inter_sample_delay, cooldown_timer):
 
 
 if __name__ == "__main__":
-    print("View your monitor here: http://142.93.117.219:5000/webclient?token=%s" % sys.argv[2])
+    print("View your monitor here: %s/webclient?token=%s" % (sys.argv[1],sys.argv[2]))
     cores = multiprocessing.cpu_count()
     print('%s cores detected' % cores)
     print('BC: CPU Tracker Version: 0.0.2')
