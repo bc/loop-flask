@@ -29,10 +29,10 @@ def refresh_update(sender):
         print('Process has been missing. %s lives left' % cooldown_timer)
         if cooldown_timer == 0:
             print("Process died")
-            # try:
-            #     os.system('afplay /System/Library/Sounds/Glass.aiff')
-            # except:
-            #     print('Ding!')
+            try:
+                os.system('afplay /System/Library/Sounds/Glass.aiff')
+            except:
+                print('Ding!')
             rumps.alert(title=None, message='It died')
             rumps.notification("SpookyLoop", "Process died", "RIP process %s" % chosen_process["name"])
             rumps.quit_application()
