@@ -1,13 +1,14 @@
 # Generate a token here: 142.93.117.219:5000/
 import os
-
+# python3 -m nuitka --follow-imports client_cpu.py
 print("Installing")
-res = os.system("pip3 -q install psutil requests")
+res = os.system("pip3 -q install psutil requests gputil")
 print(res)
 print('Installation Complete')
 
 import psutil
 import requests
+import GPUtil
 import time
 import json
 import multiprocessing
@@ -47,6 +48,8 @@ def extract_process_info(proc):
         pinfo['vms_bytes'] = proc.memory_info().vms / (1024 * 1024)
         pinfo['rss_bytes'] = proc.memory_info().rss
         pinfo['cpu'] = proc.cpu_percent(interval=None) / 100.0  # convert to fraction
+        pinfo['total_cpu'] = psutil.cpu_percent()
+        pinfo['total_gpu_info'] = GPUtil.cpu_percent()
         return pinfo
     except Exception as e:
         if type(e) == psutil.AccessDenied or type(e) == psutil.ZombieProcess:
@@ -90,8 +93,11 @@ def main(host_and_port, loop_token, inter_sample_delay, cooldown_timer):
         if outcome == "process_not_found":
             print('Process has been missing. %s lives left' % cooldown_timer)
             if cooldown_timer == 0:
-                print("process definitely died")
-                os.system('afplay /System/Library/Sounds/Glass.aiff')
+                print("Process died")
+                try:
+                    os.system('afplay /System/Library/Sounds/Glass.aiff')
+                except:
+                    print('Ding!')
                 return
                 # TODO post_process_at_neg1(target_process_name,host_and_port,loop_token)
             # if the process still has 'lives' left
