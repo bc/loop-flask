@@ -107,11 +107,3 @@ def top_n_processes(n_to_list):
     printout = ["%s: %s" % (i, procs[i]['name']) for i in range(n_to_list)]
     return procs, printout
 
-
-if __name__ == "__main__":
-    print("View your monitor here: %s/webclient?token=%s" % (sys.argv[1],sys.argv[2]))
-    cores = multiprocessing.cpu_count()
-    print('%s cores detected' % cores)
-    print('BC: CPU Tracker Version: 0.0.2')
-    input("Once your process is running, press Enter\n")
-    main(host_and_port=sys.argv[1], loop_token=sys.argv[2], inter_sample_delay=10, cooldown_timer=0)
