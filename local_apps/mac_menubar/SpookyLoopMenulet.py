@@ -20,7 +20,7 @@ cooldown_timer = cooldown_timer_full_val  # allows 2 cycles of MIA before it POS
 @rumps.timer(2)
 def refresh_update(sender):
     global cooldown_timer
-    app.title = "SpookyLoop"
+    app.title = "SpookyLoop - CPU"
 
     outcome = post_process_progress((chosen_process['name'],chosen_process['pid']), host_and_port, token)
     if outcome != "process_not_found":
@@ -225,9 +225,12 @@ if __name__ == "__main__":
     # if it's passed in via:  then the 0th argument is the app path,
     # and 1st argument is the token `loopit://26b78511-8690-4d07-b852-464ce10372b2`
     if len(sys.argv) == 2:
-        # todo verify it's actually a UUID
-        rumps.alert(title=None, message='2 arguments')
         token = str(sys.argv[1])[9:]
+        if validate_uuid4(token)==True:
+            pass
+        else:
+            #the passed token is not a uuid
+            token = ask_for_token()
 
     else:
         rumps.alert(title=None, message='not 2 arguments; will ask for token')
