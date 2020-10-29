@@ -9,7 +9,6 @@ from uuid import UUID
 import time
 import rumps
 
-
 global app, token, mytoken_menuitem, chosen_process, host_and_port, cooldown_timer, cooldown_timer_full_val
 host_and_port = "http://142.93.117.219:5000"
 mytoken_menuitem = "TOKEN_ITEM"
@@ -17,17 +16,19 @@ cooldown_timer_full_val = 2
 cooldown_timer = cooldown_timer_full_val  # allows 2 cycles of MIA before it POSTs process has eneded
 
 
-@rumps.timer(2)
+@rumps.timer(10)
 def refresh_update(sender):
     global cooldown_timer
     app.title = "SpookyLoop - CPU"
 
-    outcome = post_process_progress((chosen_process['name'],chosen_process['pid']), host_and_port, token)
+    outcome = post_process_progress((chosen_process['name'], chosen_process['pid']), host_and_port, token)
     if outcome != "process_not_found":
         cooldown_timer = cooldown_timer_full_val
+        app.title = "🎃"
     else:
         print('Process has been missing. %s lives left' % cooldown_timer)
         if cooldown_timer == 0:
+            app.title = "💔"
             print("Process died")
             try:
                 os.system('afplay /System/Library/Sounds/Glass.aiff')
@@ -38,7 +39,9 @@ def refresh_update(sender):
             rumps.quit_application()
 
         # if the process still has 'lives' left
+        app.title = "".join(["❤️" for x in range(cooldown_timer)])
         cooldown_timer -= 1
+
 
 # Generate a token here: 142.93.117.219:5000/
 import os
@@ -53,6 +56,7 @@ import time
 import json
 import multiprocessing
 import sys
+
 
 # Function must be called with root on mac due to an OS limitation
 def processes_by_cpu():
@@ -80,7 +84,7 @@ def extract_process_info(proc):
     try:
         pinfo = proc.as_dict(attrs=['pid', 'name', 'username'])
         # if its a known non-process, or it's the root process, ignore.
-        if process_name_on_blacklist(pinfo["name"]) or pinfo["pid"]==0:
+        if process_name_on_blacklist(pinfo["name"]) or pinfo["pid"] == 0:
             return None
         pinfo['vms_bytes'] = proc.memory_info().vms / (1024 * 1024)
         pinfo['rss_bytes'] = proc.memory_info().rss
@@ -94,13 +98,14 @@ def extract_process_info(proc):
         print("Had exception when extracting process info: " % json.dumps(e))
         return None
 
+
 def post_process_progress(target_process, host_socket, token):
     assert host_socket.endswith("/") is not True
     only_target_name = list(filter(lambda x: x["pid"] == target_process[1], processes_by_cpu()))
     url: str = "%s/update_cpu/?token=%s" % (host_socket, token)
     if len(only_target_name) == 0:
         print("%s process (ID %s) not found! It's likely done" % target_process)
-        payload = json.dumps({"name": target_process[0],"pid":target_process[1], "cpu": 0.0000000})
+        payload = json.dumps({"name": target_process[0], "pid": target_process[1], "cpu": 0.0000000})
         response = requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload)
         print(response.json)
         # TODO send null result
@@ -144,6 +149,7 @@ def ask_which_process_to_monitor(n_to_list=20):
     target_process = (procs[test_number]['name'], procs[test_number]['pid'])
     return target_process
 
+
 def top_n_processes(n_to_list):
     procs = processes_by_cpu()
     printout = ["%s: %s" % (i, procs[i]['name']) for i in range(n_to_list)]
@@ -185,7 +191,7 @@ def ask_for_token():
     newwindow = rumps.Window(message='Right click to paste your token below', default_text=str(clipboard_element),
                              title='SpookyLoop 5000', ok="Submit Token", cancel="Cancel", dimensions=(320, 160))
     outcome = newwindow.run()
-    #test whether the text input is actually a valid v4 UUID
+    # test whether the text input is actually a valid v4 UUID
     try:
         the_token = str(UUID(outcome.text, version=4))
     except:
@@ -195,12 +201,15 @@ def ask_for_token():
     # if they get to this point then it's a valid UUID.
     # now the question is whether it's a registered token on the server side.
 
-    url = "%s/is_token_valid/?token=26b78511-8690-4d07-b852-464ce10372b6"%host_and_port
+    url = "%s/is_token_valid/?token=%s" % (host_and_port, the_token)
     response = requests.request("GET", url, headers={}, data={})
-    if response.text.encode('utf8') == "token ok":
+    result = response.text.encode('utf8')
+    if result == b'token ok':
+        rumps.alert(title="SpookyLoop Response", message="response from server on token %s: %s" % (the_token, result))
         return the_token
     else:
-        rumps.alert(title="SpookyLoop Error", message="uuid is fine but token uuid is not registered on the server")
+        rumps.alert(title="SpookyLoop Error",
+                    message="uuid is fine but token uuid is not registered on the server. Err: %s" % result)
         sys.exit(0)
 
 
@@ -224,11 +233,13 @@ def get_process_from_user():
     try:
         index = int(proc_choice.text)
     except:
-        rumps.alert(title="SpookyLoop Error", message="You typed in %s, but that wasn't a valid number"%proc_choice.text)
-        sys.exit(0)
-    if 0 > index > len(procs)-1:
         rumps.alert(title="SpookyLoop Error",
-                    message="You typed in %s, but the number needs to be between 0 and %s!" % (proc_choice.text,len(procs)-1))
+                    message="You typed in %s, but that wasn't a valid number" % proc_choice.text)
+        sys.exit(0)
+    if 0 > index > len(procs) - 1:
+        rumps.alert(title="SpookyLoop Error",
+                    message="You typed in %s, but the number needs to be between 0 and %s!" % (
+                    proc_choice.text, len(procs) - 1))
     return procs[index]
 
 
@@ -242,10 +253,10 @@ if __name__ == "__main__":
     # and 1st argument is the token `loopit://26b78511-8690-4d07-b852-464ce10372b2`
     if len(sys.argv) == 2:
         token = str(sys.argv[1])[9:]
-        if validate_uuid4(token)==True:
+        if validate_uuid4(token) == True:
             pass
         else:
-            #the passed token is not a uuid
+            # the passed token is not a uuid
             token = ask_for_token()
 
     else:
