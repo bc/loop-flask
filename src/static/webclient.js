@@ -143,7 +143,7 @@ Array.from(mock_post_update_cpu_button).map(function(x){
 function update_CPU_view(cpu_observation) {
     cpu_val.innerText = `${cpu_observation.y.toFixed(2)}`
     cpu_title_element.innerText = `${cpu_observation.name}: Current CPU Use`
-    cpu_time.innerText = `Updated ${milliseconds_to_human_readable(((Date.now() / 1000) - cpu_observation.x))} ago`;
+    cpu_time.innerText = `Updated ${milliseconds_to_human_readable((Date.now() - cpu_observation.x)/1000)} ago`;
 }
 
 function getQueryVariable(variable) {
@@ -160,7 +160,7 @@ function getQueryVariable(variable) {
 
 function update_OBS_view(observation) {
     obs_val.innerText = `${observation.y.toFixed(2)}`;
-    obs_time.innerText = `Updated ${milliseconds_to_human_readable((Date.now() / 1000) - observation.x)} ago`;
+    obs_time.innerText = `Updated ${milliseconds_to_human_readable((Date.now() - observation.x)/1000)} ago`;
 }
 
 function GET_data(token) {

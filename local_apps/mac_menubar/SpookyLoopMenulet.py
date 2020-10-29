@@ -15,7 +15,6 @@ mytoken_menuitem = "TOKEN_ITEM"
 cooldown_timer_full_val = 2
 cooldown_timer = cooldown_timer_full_val  # allows 2 cycles of MIA before it POSTs process has eneded
 
-
 @rumps.timer(10)
 def refresh_update(sender):
     global cooldown_timer
@@ -189,7 +188,7 @@ def ask_for_token():
     clipboard_element = pyperclip.paste()
     # has token
     newwindow = rumps.Window(message='Right click to paste your token below', default_text=str(clipboard_element),
-                             title='SpookyLoop 5000', ok="Submit Token", cancel="Cancel", dimensions=(320, 160))
+                             title='SpookyLoop', ok="Submit Token", cancel="Cancel", dimensions=(320, 160))
     outcome = newwindow.run()
     # test whether the text input is actually a valid v4 UUID
     try:
@@ -205,7 +204,7 @@ def ask_for_token():
     response = requests.request("GET", url, headers={}, data={})
     result = response.text.encode('utf8')
     if result == b'token ok':
-        rumps.alert(title="SpookyLoop Response", message="response from server on token %s: %s" % (the_token, result))
+        # rumps.alert(title="SpookyLoop Response", message="response from server on token %s: %s" % (the_token, result))
         return the_token
     else:
         rumps.alert(title="SpookyLoop Error",
@@ -218,7 +217,7 @@ def mytoken_menuitem_function(_):
     webbrowser.open('http://142.93.117.219:5000/webclient?token=%s' % token, new=2)
 
 
-@rumps.clicked('Clean Quit')
+@rumps.clicked('Quit')
 def clean_up_before_quit(_):
     print('TODO notify server of disconnect')
     rumps.quit_application()
@@ -242,10 +241,9 @@ def get_process_from_user():
                     proc_choice.text, len(procs) - 1))
     return procs[index]
 
-
 if __name__ == "__main__":
     rumps.debug_mode(True)
-    app = rumps.App('SpookyLoop', menu=[mytoken_menuitem, 'Clean Quit'],
+    app = rumps.App('SpookyLoop', menu=[mytoken_menuitem, "🎃 means running", "💔 means your program quit", 'Quit'],
                     quit_button=None)
 
     token_menuitem_val = app.menu[mytoken_menuitem]
@@ -260,7 +258,7 @@ if __name__ == "__main__":
             token = ask_for_token()
 
     else:
-        rumps.alert(title=None, message='not 2 arguments; will ask for token')
+        rumps.alert(title="Welcome to SpookyLoop!", message="Get your token ready to paste")
         token = ask_for_token()
     try:
         chosen_process = get_process_from_user()
@@ -271,7 +269,7 @@ if __name__ == "__main__":
 
     if token is not None:
         # TODO check if the token is valid on the server by sending a sample CPU val or ping
-        rumps.alert(title=None, message='It worked! Also: %s' % str(sys.argv))
+        rumps.alert(title="SpookyLoop Configured!", message="I'm in the menubar 🎃")
         app.run()
     else:
         rumps.alert(title=None, message='Bad token')

@@ -37,7 +37,7 @@ def website_root():
 @app.route('/webclient')
 def webclient():
     return render_template("webclient.html")
-#
+
 
 @app.route('/is_token_valid/', methods=['GET'])
 def is_token_valid_endpoint():
