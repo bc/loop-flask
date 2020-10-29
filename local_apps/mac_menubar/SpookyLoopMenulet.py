@@ -185,10 +185,23 @@ def ask_for_token():
     newwindow = rumps.Window(message='Right click to paste your token below', default_text=str(clipboard_element),
                              title='SpookyLoop 5000', ok="Submit Token", cancel="Cancel", dimensions=(320, 160))
     outcome = newwindow.run()
+    #test whether the text input is actually a valid v4 UUID
     try:
-        return str(UUID(outcome.text, version=4))
+        the_token = str(UUID(outcome.text, version=4))
     except:
-        return None
+        rumps.alert(title="SpookyLoop Error", message='not a UUID')
+        sys.exit(0)
+
+    # if they get to this point then it's a valid UUID.
+    # now the question is whether it's a registered token on the server side.
+
+    url = "%s/is_token_valid/?token=26b78511-8690-4d07-b852-464ce10372b6"%host_and_port
+    response = requests.request("GET", url, headers={}, data={})
+    if response.text.encode('utf8') == "token ok":
+        return the_token
+    else:
+        rumps.alert(title="SpookyLoop Error", message="uuid is fine but token uuid is not registered on the server")
+        sys.exit(0)
 
 
 @rumps.clicked(mytoken_menuitem)
@@ -211,8 +224,11 @@ def get_process_from_user():
     try:
         index = int(proc_choice.text)
     except:
-        rumps.alert(title=None, message='Bad choice, needs to be a number')
+        rumps.alert(title="SpookyLoop Error", message="You typed in %s, but that wasn't a valid number"%proc_choice.text)
         sys.exit(0)
+    if 0 > index > len(procs)-1:
+        rumps.alert(title="SpookyLoop Error",
+                    message="You typed in %s, but the number needs to be between 0 and %s!" % (proc_choice.text,len(procs)-1))
     return procs[index]
 
 
