@@ -37,12 +37,12 @@ def website_root():
 @app.route('/webclient')
 def webclient():
     return render_template("webclient.html")
-
-
-@app.route('/is_token_valid', methods=['GET'])
-def is_token_valid_endpoint():
-    token = validate_token(request, DATAFOLDERPATH)
-    return "token ok"
+#
+#
+# @app.route('/is_token_valid', methods=['GET'])
+# def is_token_valid_endpoint():
+#     token = validate_token(request, DATAFOLDERPATH)
+#     return "token ok"
 
 
 @app.route('/listen/', methods=['GET'])
