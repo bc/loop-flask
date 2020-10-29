@@ -38,10 +38,12 @@ def website_root():
 def webclient():
     return render_template("webclient.html")
 
-@app.route('is_token_valid',methods=['GET'])
+
+@app.route('/is_token_valid', methods=['GET'])
 def is_token_valid_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
     return "token ok"
+
 
 @app.route('/listen/', methods=['GET'])
 def listen():
@@ -309,7 +311,7 @@ def update():
 def ping_user(obs, token, message_type):
     app.logger.info("Sending %s push notification to user phone" % message_type)
     discord_id = get_contactinfo(token, DATAFOLDERPATH)
-    if message_type=="obs":
+    if message_type == "obs":
         monotonic_lm = monotonic_obs_eta_direct(token)
         try:
             eta = monotonic_lm["predictions"]["unixtime_predicted"][11]
@@ -319,7 +321,7 @@ def ping_user(obs, token, message_type):
         eta = "NA"
     res = ping_discorder(discord_id, "Loop says:%s,%s. Done @ %s" % (message_type, obs, eta))
     if res == b'':
-        return("posted to discord")
+        return ("posted to discord")
     else:
         raise Exception("discord had an issue with your discord ID: %s, %s" % (discord_id, res))
 
