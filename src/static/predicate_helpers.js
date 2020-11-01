@@ -15,6 +15,7 @@ function get_form_elements(form_id) {
 }
 
 function predicate_form_into_statement(val_dict) {
+    //TODO clean this up so it only has obs or prog.
     const variables = ["predicate_form_obs", "predicate_form_cpu"]
     var arr = variables.map(x => val_dict[`${x}_enabled`])
     const indices = arr.reduce(
