@@ -15,7 +15,7 @@
 <style>
     pre {
         font-size: 10px;
-        padding: 3;
+        padding: 3px 3px 3px 3px;
          overflow-x: auto;
             white-space: pre-wrap;
             white-space: -moz-pre-wrap;
@@ -29,7 +29,7 @@
 <body>
 
 <header>
-    <h1>SpookyLoop Web Client v0.4.1</h1>
+    <h1>SpookyLoop Web Client v0.4.2</h1>
 </header>
 
 <details>
@@ -72,7 +72,7 @@ curl<pre id="curl_obs_code_snippet">pyco</pre>py<pre  id="python_obs_code_snippe
     <h4>5. When do you want a ping?</h4>
 
 <form id="set_predicates">
-    <input type="checkbox" id="predicate_form_cpu_enabled" name="predicate_form_cpu_enabled" checked>
+    <input type="checkbox" id="predicate_form_cpu_enabled" name="predicate_form_cpu_enabled">
     If the CPU
     <select name="predicate_form_cpu_comparator">
         <option value="<">goes below</option>
@@ -80,7 +80,7 @@ curl<pre id="curl_obs_code_snippet">pyco</pre>py<pre  id="python_obs_code_snippe
     </select>
     <input type="number" id="predicate_form_cpu_val" name="predicate_form_cpu_val" min="0" max="10" value="0.2"
            step="0.1">(where 0.2 means 20% CPU activity) <br>
-    <input type="checkbox" id="predicate_form_obs_enabled" name="predicate_form_obs_enabled" checked>
+    <input type="checkbox" id="predicate_form_obs_enabled" name="predicate_form_obs_enabled">
     If the Progress
     <select name="predicate_form_obs_comparator">
         <option value=">">goes above</option>

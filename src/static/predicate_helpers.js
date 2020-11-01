@@ -7,6 +7,10 @@ const formToJSON = elements => [].reduce.call(elements, (data, element) => {
 //returns dictionary of the form elements as key value pairs
 function get_form_elements(form_id) {
     var elements = formToJSON(document.getElementById(form_id));
+    var cpu_checked = document.getElementById("predicate_form_cpu_enabled").checked
+    var obs_checked = document.getElementById("predicate_form_obs_enabled").checked
+    elements.predicate_form_cpu_enabled = cpu_checked;
+    elements.predicate_form_obs_enabled = obs_checked;
     return elements
 }
 
@@ -17,6 +21,10 @@ function predicate_form_into_statement(val_dict) {
         (out, bool, index) => bool ? out.concat(index) : out,
         []
     )
+    if (indices.length == 0){
+        //If nothing is checked, send empty str
+        return ""
+    }
     var sentences = []
     for (let i = 0; i < indices.length; i++) {
         var varname = variables[i];
@@ -24,6 +32,7 @@ function predicate_form_into_statement(val_dict) {
         var trigger_val = val_dict[varname + "_val"];
         sentences.push(`${varname}${comparator}${trigger_val}`);
     }
+    console.log('hi')
     return sentences.join(";");
 }
 
@@ -84,10 +93,9 @@ function gen_and_send_predicate(form_id, button_id, predicate_raw_id) {
     const form_elements = get_form_elements(form_id)
     const statement = predicate_form_into_statement(form_elements);
     if (statement == ""){
-
+        alert("you have to check at least 1 of the boxes to set up the ping");
     } else{
-
-    post_set_predicate(statement, button_id, predicate_raw_id)
+        post_set_predicate(statement, button_id, predicate_raw_id);
     }
 }
 

@@ -66,11 +66,6 @@ function b_handle(d) {
         } else {
             throw Error("unacceptable input observation type")
         }
-        try {
-            // console.log(`OBSlen:${local_data_target.OBS.length}\nCPUlen:${local_data_target.CPU.length}`)
-        } catch (e) {
-            debugger;
-        }
 
     }
 
@@ -288,12 +283,7 @@ setInterval(function () {
             if (result == "too few datapoints to predict") {
                 console.log('too few datapoints to predict')
             } else {
-                try {
-                    console.log(result)
-                    _userdata["modeling"] = JSON.parse(result);
-                } catch (e) {
-                    debugger;
-                }
+                _userdata["modeling"] = JSON.parse(result);
             }
         })
         .catch(error => {
