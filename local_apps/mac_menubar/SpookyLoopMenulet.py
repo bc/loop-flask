@@ -43,7 +43,6 @@ import os
 
 import psutil
 import requests
-# import GPUtil
 import time
 import json
 import sys
@@ -251,19 +250,19 @@ if __name__ == "__main__":
     # and 1st argument is the token `loopit://26b78511-8690-4d07-b852-464ce10372b2`
     input_arguments = "\n".join(sys.argv)
     rumps.alert(title="SL Inputs:", message=input_arguments)
-    if len(sys.argv) != 0:
+    if len(sys.argv) > 1:
         token = str(sys.argv[1]).replace("loopit://", "").strip().lower()
         if validate_uuid4(token):
             rumps.alert(title="Extracted token is valid", message=token)
             pass
         else:
             # the passed token is not a uuid
-            rumps.alert(title="Extracted token was not valid", message="%s, len: %s" % (token, len(token)))
+            # rumps.alert(title="Extracted token looked weird", message="%s, len: %s" % (token, len(token)))
             # replace token with manual input token
             token = ask_for_token()
 
     else:
-        rumps.alert(title="Welcome to SpookyLoop!", message="Get your token ready to paste")
+        # rumps.alert(title="SpookyLoop", message="Get your token ready to paste")
         token = ask_for_token()
     try:
         chosen_process = get_process_from_user()
@@ -274,7 +273,8 @@ if __name__ == "__main__":
 
     if token is not None:
         # TODO check if the token is valid on the server by sending a sample CPU val or ping
-        rumps.alert(title="SpookyLoop Configured!", message="I'm in the menubar 🎃")
+        rumps.alert(title="SpookyLoop", message="🎃: I'm up in the menubar!")
+        webbrowser.open('http://142.93.117.219:5000/webclient?token=%s' % token, new=2, autoraise=True)
         app.run()
     else:
         rumps.alert(title=None, message='Bad token')
