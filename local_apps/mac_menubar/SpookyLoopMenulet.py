@@ -2,6 +2,7 @@ import webbrowser
 from uuid import UUID
 
 import pyperclip
+import pdb
 import rumps
 
 global app, token, mytoken_menuitem, chosen_process, host_and_port, cooldown_timer, cooldown_timer_full_val
@@ -249,7 +250,7 @@ if __name__ == "__main__":
     rumps.alert(title="SL Inputs:", message=input_arguments)
     if len(sys.argv) != 0:
         token = str(sys.argv[1]).replace("loopit://", "").strip().lower()
-
+        pdb.set_trace()
         if validate_uuid4(token):
             rumps.alert(title="Extracted token is valid", message=token)
             pass
