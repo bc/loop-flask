@@ -26,11 +26,7 @@ def refresh_update(sender):
         if cooldown_timer == 0:
             app.title = "💔"
             print("Process died")
-            try:
-                # TODO sound design
-                os.system('afplay /System/Library/Sounds/Glass.aiff')
-            except:
-                print('Ding!')
+            ping_noise()
             rumps.notification("SpookyLoop", "Process died", "RIP process %s" % chosen_process["name"])
             rumps.quit_application()
 
@@ -237,7 +233,15 @@ def get_process_from_user():
     return procs[index]
 
 
+def ping_noise(sound_filepath="/System/Library/Sounds/Glass.aiff"):
+    try:
+        os.system('afplay %s'%sound_filepath)
+    except:
+        print("Could not play ping noise")
+
+
 if __name__ == "__main__":
+    ping_noise()
     print("starting pycode at %s" % time.time())
     app = rumps.App('SpookyLoop', menu=[mytoken_menuitem, "🎃 means running", "💔 means your program quit", 'Quit'],
                     quit_button=None)
