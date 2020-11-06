@@ -249,12 +249,18 @@ if __name__ == "__main__":
     token_menuitem_val = app.menu[mytoken_menuitem]
     # if it's passed in via:  then the 0th argument is the app path,
     # and 1st argument is the token `loopit://26b78511-8690-4d07-b852-464ce10372b2`
-    if len(sys.argv) == 2:
-        token = str(sys.argv[1])[9:]
+    input_arguments = "\n".join(sys.argv)
+    rumps.alert(title="SL Inputs:", message=input_arguments)
+    if len(sys.argv) != 0 :
+        token = str(sys.argv[1]).replace("loopit://","")
+
         if validate_uuid4(token) == True:
+            rumps.alert(title="Extracted token is valid", message=token)
             pass
         else:
             # the passed token is not a uuid
+            rumps.alert(title="Extracted token was not valid", message=token)
+            # replace token with manual input token
             token = ask_for_token()
 
     else:
