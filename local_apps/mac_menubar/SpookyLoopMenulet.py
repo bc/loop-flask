@@ -5,6 +5,8 @@ import pyperclip
 import pdb
 import rumps
 import sentry_sdk
+from sentry_sdk import capture_message, capture_exception
+# https://sentry.io/organizations/bc-3h/issues/?project=5507653
 try:
     # traces_sample_rate of 1 means all issues get reported to sentry
     sentry_sdk.init(
@@ -284,7 +286,9 @@ if __name__ == "__main__":
         # TODO check if the token is valid on the server by sending a sample CPU val or ping
         rumps.alert(title="SpookyLoop", message="🎃: I'm up in the menubar!")
         webbrowser.open('http://142.93.117.219:5000/webclient?token=%s' % token, new=2, autoraise=True)
+        capture_message('Menubar opened with token: %s' % token)
         app.run()
     else:
-        rumps.alert(title=None, message='Bad token')
+        rumps.alert(title=None, message='Bad token, contact @bcal on Discord if this happens again')
+        capture_exception('token was None and whole app crashed')
         sys.exit(0)
