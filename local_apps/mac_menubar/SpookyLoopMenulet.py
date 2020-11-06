@@ -4,6 +4,15 @@ from uuid import UUID
 import pyperclip
 import pdb
 import rumps
+import sentry_sdk
+try:
+    # traces_sample_rate of 1 means all issues get reported to sentry
+    sentry_sdk.init(
+    "https://919f99806e194e4c99ef66178c5f7d0c@o395868.ingest.sentry.io/5507653",
+    traces_sample_rate=1.0
+    )
+except:
+    print('No dice on Sentry SDK')
 
 global app, token, mytoken_menuitem, chosen_process, host_and_port, cooldown_timer, cooldown_timer_full_val
 host_and_port = "http://142.93.117.219:5000"
@@ -249,11 +258,11 @@ if __name__ == "__main__":
     # if it's passed in via:  then the 0th argument is the app path,
     # and 1st argument is the token `loopit://26b78511-8690-4d07-b852-464ce10372b2`
     input_arguments = "\n".join(sys.argv)
-    rumps.alert(title="SL Inputs:", message=input_arguments)
+    # rumps.alert(title="SL Inputs:", message=input_arguments)
     if len(sys.argv) > 1:
         token = str(sys.argv[1]).replace("loopit://", "").strip().lower()
         if validate_uuid4(token):
-            rumps.alert(title="Extracted token is valid", message=token)
+            # rumps.alert(title="Extracted token is valid", message=token)
             pass
         else:
             # the passed token is not a uuid

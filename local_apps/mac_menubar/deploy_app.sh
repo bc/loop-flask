@@ -5,7 +5,7 @@ cd /Users/briancohn/Documents/GitHub/bc/loop-flask/local_apps/mac_menubar || ech
 rm -rf build dist
 
 # Build app
-python3 setup.py py2app -A
+python3 setup.py py2app
 
 # Compress a zip file to the Drive Folder
 zip -r -y dist/temp.zip dist/SpookyLoop.app
