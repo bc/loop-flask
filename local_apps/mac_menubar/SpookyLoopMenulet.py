@@ -27,10 +27,10 @@ def refresh_update(sender):
             app.title = "💔"
             print("Process died")
             try:
+                # TODO sound design
                 os.system('afplay /System/Library/Sounds/Glass.aiff')
             except:
                 print('Ding!')
-            rumps.alert(title=None, message='It died')
             rumps.notification("SpookyLoop", "Process died", "RIP process %s" % chosen_process["name"])
             rumps.quit_application()
 
@@ -155,7 +155,7 @@ def validate_uuid4(uuid_string):
     """
     https://gist.github.com/ShawnMilo/7777304
     Validate that a UUID string is in
-    fact a valid uuid4.
+    fact a valid uuid4. Input can have the dashes or not
 
     Happily, the uuid module does the actual
     checking for us.
@@ -176,8 +176,7 @@ def validate_uuid4(uuid_string):
     # but an invalid uuid4,
     # the UUID.__init__ will convert it to a
     # valid uuid4. This is bad for validation purposes.
-
-    return val.hex == uuid_string
+    return val.hex == uuid_string.replace("-", "")
 
 
 def ask_for_token():
@@ -239,7 +238,7 @@ def get_process_from_user():
 
 
 if __name__ == "__main__":
-    rumps.debug_mode(True)
+    print("starting pycode at %s" % time.time())
     app = rumps.App('SpookyLoop', menu=[mytoken_menuitem, "🎃 means running", "💔 means your program quit", 'Quit'],
                     quit_button=None)
 
@@ -250,13 +249,12 @@ if __name__ == "__main__":
     rumps.alert(title="SL Inputs:", message=input_arguments)
     if len(sys.argv) != 0:
         token = str(sys.argv[1]).replace("loopit://", "").strip().lower()
-        pdb.set_trace()
         if validate_uuid4(token):
             rumps.alert(title="Extracted token is valid", message=token)
             pass
         else:
             # the passed token is not a uuid
-            rumps.alert(title="Extracted token was not valid", message="%s, len: %s"%(token, len(token)))
+            rumps.alert(title="Extracted token was not valid", message="%s, len: %s" % (token, len(token)))
             # replace token with manual input token
             token = ask_for_token()
 
