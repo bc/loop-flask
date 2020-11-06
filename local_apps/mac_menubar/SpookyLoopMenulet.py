@@ -1,19 +1,15 @@
-import datetime
-import os
-import sys
 import webbrowser
-import pyperclip
-import rumps
-
 from uuid import UUID
-import time
+
+import pyperclip
 import rumps
 
 global app, token, mytoken_menuitem, chosen_process, host_and_port, cooldown_timer, cooldown_timer_full_val
 host_and_port = "http://142.93.117.219:5000"
 mytoken_menuitem = "TOKEN_ITEM"
 cooldown_timer_full_val = 2
-cooldown_timer = cooldown_timer_full_val  # allows 2 cycles of MIA before it POSTs process has eneded
+cooldown_timer = cooldown_timer_full_val  # allows 2 cycles of MIA before it POSTs process has ended
+
 
 @rumps.timer(10)
 def refresh_update(sender):
@@ -53,7 +49,6 @@ import requests
 # import GPUtil
 import time
 import json
-import multiprocessing
 import sys
 
 
@@ -94,7 +89,7 @@ def extract_process_info(proc):
     except Exception as e:
         if type(e) == psutil.AccessDenied or type(e) == psutil.ZombieProcess:
             return None
-        print("Had exception when extracting process info: " % json.dumps(e))
+        print("Had exception when extracting process info: %s" % json.dumps(e))
         return None
 
 
@@ -238,8 +233,9 @@ def get_process_from_user():
     if 0 > index > len(procs) - 1:
         rumps.alert(title="SpookyLoop Error",
                     message="You typed in %s, but the number needs to be between 0 and %s!" % (
-                    proc_choice.text, len(procs) - 1))
+                        proc_choice.text, len(procs) - 1))
     return procs[index]
+
 
 if __name__ == "__main__":
     rumps.debug_mode(True)
@@ -251,15 +247,15 @@ if __name__ == "__main__":
     # and 1st argument is the token `loopit://26b78511-8690-4d07-b852-464ce10372b2`
     input_arguments = "\n".join(sys.argv)
     rumps.alert(title="SL Inputs:", message=input_arguments)
-    if len(sys.argv) != 0 :
-        token = str(sys.argv[1]).replace("loopit://","")
+    if len(sys.argv) != 0:
+        token = str(sys.argv[1]).replace("loopit://", "").strip().lower()
 
-        if validate_uuid4(token) == True:
+        if validate_uuid4(token):
             rumps.alert(title="Extracted token is valid", message=token)
             pass
         else:
             # the passed token is not a uuid
-            rumps.alert(title="Extracted token was not valid", message=token)
+            rumps.alert(title="Extracted token was not valid", message="%s, len: %s"%(token, len(token)))
             # replace token with manual input token
             token = ask_for_token()
 
