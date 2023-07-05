@@ -32,7 +32,6 @@ def website_root():
 def webclient():
     return render_template("webclient.html")
 
-
 @app.route('/is_token_valid/', methods=['GET'])
 def is_token_valid_endpoint():
     token = validate_token(request, DATAFOLDERPATH)
@@ -311,9 +310,11 @@ def ping_user(obs, token, message_type):
             eta = monotonic_lm["predictions"]["unixtime_predicted"][11]
         except:
             eta = "NA"
+        res = ping_discorder(discord_id, f"Update: {obs}. ETA @ {eta}")
+
     else:
-        eta = "NA"
-    res = ping_discorder(discord_id, "Loop says:%s,%s. Done @ %s" % (message_type, obs, eta))
+        res = ping_discorder(discord_id, f"CPU trigger: CPU={obs*100}%.")
+
     if res == b'':
         return ("posted to discord")
     else:

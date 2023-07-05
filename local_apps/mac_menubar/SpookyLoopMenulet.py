@@ -7,7 +7,7 @@ import rumps
 
 
 global app, token, mytoken_menuitem, chosen_process, host_and_port, cooldown_timer, cooldown_timer_full_val
-host_and_port = "http://142.93.117.219:5000"
+host_and_port = "http://0.0.0.0:8000"
 mytoken_menuitem = "TOKEN_ITEM"
 cooldown_timer_full_val = 2
 cooldown_timer = cooldown_timer_full_val  # allows 2 cycles of MIA before it POSTs process has ended
@@ -205,7 +205,7 @@ def ask_for_token():
 
 @rumps.clicked(mytoken_menuitem)
 def mytoken_menuitem_function(_):
-    webbrowser.open('http://142.93.117.219:5000/webclient?token=%s' % token, new=2)
+    webbrowser.open(f'{host_and_port}/webclient?token={token}', new=2)
 
 
 @rumps.clicked('Quit')
@@ -275,10 +275,9 @@ if __name__ == "__main__":
     if token is not None:
         # TODO check if the token is valid on the server by sending a sample CPU val or ping
         rumps.alert(title="SpookyLoop", message="🎃: I'm up in the menubar!")
-        webbrowser.open('http://142.93.117.219:5000/webclient?token=%s' % token, new=2, autoraise=True)
-        capture_message('Menubar opened with token: %s' % token)
+        webbrowser.open(f'{host_and_port}/webclient?token={token}', new=2, autoraise=True)
         app.run()
     else:
         rumps.alert(title=None, message='Bad token, contact @bcal on Discord if this happens again')
-        capture_exception('token was None and whole app crashed')
+        print('token was None and whole app crashed')
         sys.exit(0)

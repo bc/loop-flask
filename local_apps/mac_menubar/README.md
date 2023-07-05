@@ -12,4 +12,5 @@ python3 SpookyLoopMenulet.py
 # to build .app
 python3 setup.py py2app
 ```
-
+to run from command line once it is built:
+`dist/SpookyLoop.app/Contents/MacOS/SpookyLoop`
