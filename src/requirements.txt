@@ -4,3 +4,4 @@ numpy
 uvicorn[standard]
 Flask
 dataclasses_json
+cryptography
