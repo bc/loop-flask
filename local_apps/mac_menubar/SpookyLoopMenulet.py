@@ -84,7 +84,7 @@ def extract_process_info(proc):
         # pinfo['total_gpu_info'] = GPUtil.cpu_percent()
         return pinfo
     except Exception as e:
-        if type(e) == psutil.AccessDenied or type(e) == psutil.ZombieProcess:
+        if type(e) in [psutil.AccessDenied ,psutil.ZombieProcess, psutil.NoSuchProcess]:
             return None
         print("Had exception when extracting process info: %s" % json.dumps(e))
         return None
