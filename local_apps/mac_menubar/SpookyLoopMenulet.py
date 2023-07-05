@@ -4,17 +4,7 @@ from uuid import UUID
 import pyperclip
 import pdb
 import rumps
-import sentry_sdk
-from sentry_sdk import capture_message, capture_exception
-# https://sentry.io/organizations/bc-3h/issues/?project=5507653
-try:
-    # traces_sample_rate of 1 means all issues get reported to sentry
-    sentry_sdk.init(
-    "https://919f99806e194e4c99ef66178c5f7d0c@o395868.ingest.sentry.io/5507653",
-    traces_sample_rate=1.0
-    )
-except:
-    print('No dice on Sentry SDK')
+
 
 global app, token, mytoken_menuitem, chosen_process, host_and_port, cooldown_timer, cooldown_timer_full_val
 host_and_port = "http://142.93.117.219:5000"
