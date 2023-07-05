@@ -3,9 +3,9 @@ import logging
 import os
 import numpy as np
 import requests
-import sentry_sdk
+
 from flask import Flask, request, jsonify, abort, Response, render_template, redirect
-from sentry_sdk.integrations.flask import FlaskIntegration
+
 
 from loop_helpers.authentication import validate_token, gen_new_token
 from loop_helpers.datafunctions import get_last_observation_line, try_parse_object_as, compose_CPU, is_normalized, \
@@ -23,10 +23,6 @@ DATAFOLDERPATH = "../data"
 # app.logger.error('this is an ERROR message')
 # app.logger.critical('this is a CRITICAL message')
 
-sentry_sdk.init(
-    dsn="https://074264e9da2c4444ae74f9e632f3895a@o395868.ingest.sentry.io/5263630",
-    integrations=[FlaskIntegration()]
-)
 
 
 @app.route('/')
@@ -385,11 +381,6 @@ def start():
     my_token = gen_new_token(DATAFOLDERPATH)
     return redirect(f"{request.host_url}webclient?token={my_token}", code=302)
 
-
-@app.route('/debug-sentry')
-def trigger_error():
-    division_by_zero = 1 / 0
-    return division_by_zero
 
 
 # when you run the app directly via python3 app.py or flask run
